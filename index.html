@@ -1141,7 +1141,7 @@
      * Konfigurasi Integrasi Google Apps Script Web App:
      * Tempelkan URL Deployment Web App Anda pada konstanta GAS_ENDPOINT_URL di bawah ini.
      */
-    const GAS_ENDPOINT_URL = ""; 
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbwCem5bPJ6mQtQEpJ-ql5ERdZWAa9KbDwegsBeKf87HVeqp7B1tDZLPS5hwUwzwK_-Y/exec"; 
 
     // Helper panggil Google Apps Script dengan konfigurasi anti-CORS redirect follow
     async function fetchFromGAS(action, method = 'GET', payload = null) {
@@ -2378,24 +2378,82 @@
     async function executeBulkImport() {
       if (!stagedBulkDocuments || stagedBulkDocuments.length === 0) return;
 
-      showLoading(true, `Mengimpor ${stagedBulkDocuments.length} berkas kolektif...`);
+      showLoading(true, `Mengimpor & menyimpan ${stagedBulkDocuments.length} berkas ke Google Spreadsheet...`);
 
+      // 1. Simpan permanen ke backend Google Apps Script & Google Spreadsheet
       const res = await fetchFromGAS('batchImportDocuments', 'POST', { documents: stagedBulkDocuments });
 
-      showLoading(false);
-
-      // Gabungkan ke data lokal
+      // 2. Gabungkan data baru ke koleksi lokal secara aman
       stagedBulkDocuments.forEach(newDoc => {
-        localDocuments.unshift(newDoc);
+        const existIdx = localDocuments.findIndex(d => d.id === newDoc.id || (String(d.nisn).trim() === String(newDoc.nisn).trim() && d.jenis_dokumen === newDoc.jenis_dokumen));
+        if (existIdx >= 0) {
+          localDocuments[existIdx] = newDoc;
+        } else {
+          localDocuments.unshift(newDoc);
+        }
       });
 
+      // 3. Simpan snapshot cache lokal agar data tetap tampil saat browser di-reload
+      persistLocalCache();
+
+      showLoading(false);
       closeBulkImportModal();
       syncAdminClassOptions();
       syncGuruClassOptions();
       renderAdminDocTable();
       renderAdminResultsTable();
-      showToast(`Berhasil mengimpor ${stagedBulkDocuments.length} berkas arsip!`, 'success');
+      if (currentGuruSession) renderGuruTable();
+
+      const successMsg = (res && res.message) ? res.message : `Berhasil mengimpor & menyimpan ${stagedBulkDocuments.length} berkas permanen!`;
+      showToast(successMsg, 'success');
       stagedBulkDocuments = [];
+    }
+
+    function persistLocalCache() {
+      try {
+        localStorage.setItem('cached_portal_master_data', JSON.stringify({
+          documents: localDocuments,
+          verifications: localVerifications
+        }));
+      } catch (e) {
+        console.warn('Gagal menyimpan cache lokal:', e);
+      }
+    }
+
+    async function loadMasterDataFromBackend(forceRefresh = false) {
+      // 1. Pulihkan data instan dari cache lokal terlebih dahulu
+      const cached = localStorage.getItem('cached_portal_master_data');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.documents && Array.isArray(parsed.documents) && parsed.documents.length > 0) {
+            localDocuments = parsed.documents;
+          }
+          if (parsed.verifications && typeof parsed.verifications === 'object') {
+            localVerifications = { ...localVerifications, ...parsed.verifications };
+          }
+        } catch (e) {
+          console.warn('Cache parse error:', e);
+        }
+      }
+
+      // 2. Jika terhubung ke Google Apps Script Web App, muat data terbaru dari Google Spreadsheet
+      if (GAS_ENDPOINT_URL && GAS_ENDPOINT_URL.startsWith('http')) {
+        try {
+          const remoteData = await fetchFromGAS('getAllData', 'GET');
+          if (remoteData && remoteData.status === 'success' && remoteData.data) {
+            if (Array.isArray(remoteData.data.documents) && remoteData.data.documents.length > 0) {
+              localDocuments = remoteData.data.documents;
+            }
+            if (remoteData.data.verifications) {
+              localVerifications = { ...localVerifications, ...remoteData.data.verifications };
+            }
+            persistLocalCache();
+          }
+        } catch (err) {
+          console.warn('Gagal memuat data live dari GAS:', err);
+        }
+      }
     }
 
     function downloadOfficialBulkTemplate() {
@@ -2578,8 +2636,9 @@
         .replace(/'/g, '&#039;');
     }
 
-    // Inisialisasi awal saat halaman siap
-    window.addEventListener('DOMContentLoaded', () => {
+    // Inisialisasi awal saat halaman siap: panggil data tersimpan dari Spreadsheet
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadMasterDataFromBackend();
       syncAdminClassOptions();
       syncGuruClassOptions();
     });

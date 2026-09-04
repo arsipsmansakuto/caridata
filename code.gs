@@ -7,6 +7,7 @@
  *  - Pembuatan database otomatis (Sheet & Folder Drive)
  *  - Pencarian berkas berdasarkan NISN (Server-side Indexing)
  *  - Manajemen unggah berkas gambar ke Google Drive (Direct URL lh3)
+ *  - Impor kolektif dokumen massal (Batch Import via Excel/CSV)
  *  - Otentikasi hak akses Admin TU & Portal Guru
  *  - Sinkronisasi otomatis konfirmasi Guru ke status Siswa (Benar/Salah)
  * =========================================================================
@@ -148,6 +149,9 @@ function doPost(e) {
       
       case 'uploadDocument':
         return handleUploadDocument(payload);
+
+      case 'batchImportDocuments':
+        return handleBatchImportDocuments(payload.documents);
 
       case 'editDocument':
         return handleEditDocument(payload);
@@ -373,6 +377,66 @@ function handleGetStudentsSummary(params) {
 
   const result = Array.from(studentMap.values());
   return createJsonResponse({ status: 'success', data: { students: result } });
+}
+
+/**
+ * Menyimpan banyak arsip berkas sekaligus (Import Kolektif) ke Google Sheets.
+ * Menggunakan batch append dengan getRange().setValues() untuk performa tinggi.
+ */
+function handleBatchImportDocuments(documents) {
+  if (!documents || !Array.isArray(documents) || documents.length === 0) {
+    return createJsonResponse({ status: 'error', message: 'Daftar dokumen import kolektif kosong.' });
+  }
+
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(25000); // Kunci hingga 25 detik untuk batch data
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheetStudents = ss.getSheetByName(SHEET_STUDENTS);
+    if (!sheetStudents) {
+      setupDatabase();
+      sheetStudents = ss.getSheetByName(SHEET_STUDENTS);
+    }
+
+    const rowsToAppend = [];
+    const nowIso = new Date().toISOString();
+
+    for (let i = 0; i < documents.length; i++) {
+      const doc = documents[i];
+      const nisn = String(doc.nisn).trim();
+      const nama = String(doc.nama_siswa).trim();
+      const kelas = doc.kelas || 'XII FL 1';
+      const jenis = doc.jenis_dokumen || 'Ijazah';
+      const fileId = doc.file_id || '';
+      const fileUrl = doc.file_url || (fileId ? ('https://lh3.googleusercontent.com/d/' + fileId) : '');
+      const fileName = doc.file_name || (jenis.toLowerCase() + '_' + nisn + '.jpg');
+      const docId = doc.id || ('DOC-' + new Date().getFullYear() + '-B' + Math.floor(1000 + Math.random() * 9000));
+      const uploader = doc.uploaded_by || 'admin_tu';
+
+      rowsToAppend.push([
+        docId, nisn, nama, kelas, jenis,
+        fileId, fileUrl, fileName, nowIso, uploader
+      ]);
+    }
+
+    if (rowsToAppend.length > 0) {
+      const lastRow = sheetStudents.getLastRow();
+      const numRows = rowsToAppend.length;
+      const numCols = rowsToAppend[0].length;
+      sheetStudents.getRange(lastRow + 1, 1, numRows, numCols).setValues(rowsToAppend);
+    }
+
+    return createJsonResponse({
+      status: 'success',
+      message: 'Berhasil mengimpor ' + rowsToAppend.length + ' berkas arsip secara kolektif!',
+      total_imported: rowsToAppend.length
+    });
+  } catch (error) {
+    return createJsonResponse({ status: 'error', message: 'Gagal import kolektif: ' + error.toString() });
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 /**

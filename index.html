@@ -997,7 +997,7 @@
      */
 
     // Placeholder URL Google Apps Script Backend (Isi dengan link Web App /exec Anda)
-    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxRfmDIyzzp0Y_UFiOaql6bI_IuY0BJwOBH_Hjz8B7uLSzU29E0PL0hDSaWeFVHKSAs/exec";
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxp0LHus1aLJrh2V6IiM3R0TGGCQbYynSVXpJU09eiPh4VB9k3asSmUXWpOI5xMGflj/exec";
 
     // Kunci Penyimpanan Cache Persistensi Browser
     const STORAGE_KEY_DOCS = "portal_arsip_docs_v4";
@@ -1473,7 +1473,7 @@
           renderGuruTable();
           showToast('Selamat datang di Portal Guru & Wali Kelas.', 'success');
         } else {
-          showToast('Username atau password guru salah. (Gunakan: guru / 123456)', 'error');
+          showToast('Username atau password guru salah.', 'error');
         }
       }, 300);
     }
@@ -1871,7 +1871,7 @@
           renderAdminHasilTable();
           showToast('Selamat datang di Panel Administrasi Tata Usaha.', 'success');
         } else {
-          showToast('Username atau password admin salah. (Gunakan: admin / 123456)', 'error');
+          showToast('Username atau password admin salah.', 'error');
         }
       }, 300);
     }

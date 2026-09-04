@@ -58,8 +58,8 @@ function setupDatabase() {
     sheetUsers.setFrozenRows(1);
 
     // Tambah akun default awal
-    sheetUsers.appendRow(['admin', '123456', 'Administrator TU', 'ADMIN', 'ACTIVE', new Date().toISOString()]);
-    sheetUsers.appendRow(['guru', '123456', 'Wali Kelas / Guru Pembina', 'GURU', 'ACTIVE', new Date().toISOString()]);
+    sheetUsers.appendRow(['', '', 'Administrator TU', 'ADMIN', 'ACTIVE', new Date().toISOString()]);
+    sheetUsers.appendRow(['', '', 'Wali Kelas / Guru Pembina', 'GURU', 'ACTIVE', new Date().toISOString()]);
   }
 
   // 4. Inisialisasi Folder Google Drive

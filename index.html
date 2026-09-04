@@ -313,6 +313,9 @@
 
     </section>
 
+    <!-- ============================================================== -->
+    <!-- TAB 2: PORTAL GURU & WALI KELAS                               -->
+    <!-- ============================================================== -->
     <section id="tab-guru" class="hidden space-y-6">
 
       <!-- Guru Login Box (Shown when not authenticated) -->
@@ -359,6 +362,7 @@
         </form>
       </div>
 
+      <!-- Guru Dashboard (Shown when authenticated) -->
       <div id="guruDashboard" class="hidden space-y-6">
 
         <!-- Guru Header Bar -->
@@ -453,6 +457,7 @@
 
         </div>
 
+        <!-- Guru Student Validation Table -->
         <div class="rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-xl">
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
@@ -476,6 +481,9 @@
 
     </section>
 
+    <!-- ============================================================== -->
+    <!-- TAB 3: PORTAL ADMIN TU                                        -->
+    <!-- ============================================================== -->
     <section id="tab-admin" class="hidden space-y-6">
 
       <!-- Admin Login Box (Shown when not authenticated) -->
@@ -522,6 +530,7 @@
         </form>
       </div>
 
+      <!-- Admin Dashboard (Shown when authenticated) -->
       <div id="adminDashboard" class="hidden space-y-6">
 
         <!-- Admin Top Control Header -->
@@ -561,6 +570,7 @@
           </div>
         </div>
 
+        <!-- 4 Stats Cards Bento Grid -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800">
             <span class="text-xs text-slate-400 font-medium">Siswa Terdaftar</span>
@@ -653,6 +663,7 @@
             </form>
           </div>
 
+          <!-- Master Documents Table Card -->
           <div class="rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-xl space-y-4 p-5">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="flex items-center gap-2">
@@ -754,7 +765,6 @@
     </section>
 
   </main>
-
 
   <!-- Modal 1: Image Lightbox Preview -->
   <div id="modalLightbox" class="fixed inset-0 z-[1000] hidden items-center justify-center p-4 bg-slate-950/80 modal-backdrop">
@@ -963,7 +973,7 @@
      */
 
     // Placeholder URL Google Apps Script Backend (Isi dengan link Web App /exec Anda)
-    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbzQtx76lSmloLUOl-ZdEVoN3WARhJjn8PxQ2MTWlmxqRxJiraUDt7w2ZEk4oOkSzrsX/exec";
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxx7Sat8JBWxiBuawddeWf8x8ul2snIyS45Lzl0t_jSUC9hM31mr4pFqtUFLYud0_Xh/exec";
 
     // Kunci Penyimpanan Cache Persistensi Browser
     const STORAGE_KEY_DOCS = "portal_arsip_docs_v4";
@@ -1084,7 +1094,12 @@
               localDocuments = result.documents;
             }
             if (result.verifications && typeof result.verifications === 'object') {
-              localVerifications = result.verifications;
+              localVerifications = { ...localVerifications, ...result.verifications };
+              // Petakan juga key NISN tanpa awalan nol untuk fleksibilitas pencarian
+              Object.keys(result.verifications).forEach(k => {
+                const cleanK = String(k).replace(/^0+/, '') || '0';
+                localVerifications[cleanK] = result.verifications[k];
+              });
             }
             saveStateToCache();
           }
@@ -1343,7 +1358,7 @@
       }
     }
 
-    function handleStudentConfirmAction(status) {
+    async function handleStudentConfirmAction(status) {
       const nisnVal = document.getElementById('resNISN')?.textContent?.trim();
       if (!nisnVal) return;
 
@@ -1357,60 +1372,49 @@
         }
       }
 
-      showLoading(true, 'Menyimpan konfirmasi mandiri siswa...');
+      showLoading(true, 'Menyimpan konfirmasi ke Google Spreadsheet & mengunci status...');
 
-      setTimeout(() => {
-        showLoading(false);
-        const cleanNISN = nisnVal.replace(/^0+/, '') || '0';
-        const nowIso = new Date().toISOString();
+      const cleanNISN = nisnVal.replace(/^0+/, '') || '0';
+      const nowIso = new Date().toISOString();
 
-        localVerifications[nisnVal] = {
-          status: status,
-          note: noteVal,
-          confirmed_at: nowIso,
-          validator_role: 'siswa'
-        };
-        localVerifications[cleanNISN] = localVerifications[nisnVal];
-        saveStateToCache();
+      // 1. Simpan ke state lokal & cache browser secara instan
+      localVerifications[nisnVal] = {
+        status: status,
+        note: noteVal,
+        confirmed_at: nowIso,
+        validator_role: 'siswa'
+      };
+      localVerifications[cleanNISN] = localVerifications[nisnVal];
+      saveStateToCache();
 
-        updateStudentVerificationBadge(nisnVal);
-        showToast(status === 'BENAR' ? 'Data berhasil disahkan dan status dikunci!' : 'Laporan koreksi berhasil dikirim ke Tata Usaha.', 'success');
-
-        if (currentGuruSession) renderGuruTable();
-        if (currentAdminSession) {
-          updateAdminStatistics();
-          renderAdminHasilTable();
+      // 2. Kirim secara permanen ke Google Spreadsheet backend
+      if (GAS_ENDPOINT_URL && GAS_ENDPOINT_URL.trim().startsWith("http")) {
+        try {
+          await fetch(GAS_ENDPOINT_URL, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'studentConfirm',
+              nisn: nisnVal,
+              status: status,
+              note: noteVal,
+              validator_role: 'siswa'
+            })
+          });
+        } catch (err) {
+          console.warn("Sinkronisasi latar belakang Google Spreadsheet tertunda:", err);
         }
-      }, 350);
-    }
+      }
 
-    function syncGuruClassOptions() {
-      const select = document.getElementById('guruFilterKelas');
-      if (!select) return;
+      showLoading(false);
+      updateStudentVerificationBadge(nisnVal);
+      showToast(status === 'BENAR' ? 'Data berhasil disahkan dan status terkunci permanen!' : 'Laporan koreksi tersimpan dan status terkunci.', 'success');
 
-      // Kumpulkan semua kelas unik murni dari dokumen yang ada
-      const classSet = new Set();
-      localDocuments.forEach(d => {
-        if (d.kelas && String(d.kelas).trim()) {
-          classSet.add(String(d.kelas).trim());
-        }
-      });
-
-      const sortedClasses = Array.from(classSet).sort();
-      const currentVal = select.value || 'ALL';
-
-      select.innerHTML = '<option value="ALL">Semua Kelas (Seluruh Siswa)</option>';
-      sortedClasses.forEach(cls => {
-        const opt = document.createElement('option');
-        opt.value = cls;
-        opt.textContent = cls;
-        select.appendChild(opt);
-      });
-
-      if (sortedClasses.includes(currentVal)) {
-        select.value = currentVal;
-      } else {
-        select.value = 'ALL';
+      if (currentGuruSession) renderGuruTable();
+      if (currentAdminSession) {
+        updateAdminStatistics();
+        renderAdminHasilTable();
       }
     }
 
@@ -1420,7 +1424,7 @@
       const p = document.getElementById('guruPassword')?.value?.trim();
 
       if (!u || !p) {
-        showToast('Silakan masukkan username dan password.', 'warning');
+        showToast('Silakan masukkan username dan password guru.', 'warning');
         return;
       }
 
@@ -1457,6 +1461,29 @@
       document.getElementById('guruUsername').value = '';
       document.getElementById('guruPassword').value = '';
       showToast('Sesi Guru telah diakhiri.', 'info');
+    }
+
+    function syncGuruClassOptions() {
+      const select = document.getElementById('guruFilterKelas');
+      if (!select) return;
+
+      const curVal = select.value || 'ALL';
+      const classSet = new Set();
+
+      localDocuments.forEach(doc => {
+        if (doc.kelas && String(doc.kelas).trim()) {
+          classSet.add(String(doc.kelas).trim());
+        }
+      });
+
+      const sortedClasses = Array.from(classSet).sort();
+      let html = '<option value="ALL">Semua Kelas (Seluruh Siswa)</option>';
+      sortedClasses.forEach(c => {
+        html += `<option value="${c}">${c}</option>`;
+      });
+
+      select.innerHTML = html;
+      select.value = curVal;
     }
 
     function renderGuruTable() {
@@ -1577,9 +1604,9 @@
               <button 
                 onclick="handleGuruConfirmDirect('${s.nisn}', 'BENAR')" 
                 class="px-2.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold transition-all"
-                title="Sahkan Berkas Benar"
+                title="Validasi Berkas Benar"
               >
-                Sahkan
+                Benar
               </button>
               <button 
                 onclick="openGuruRejectModal('${s.nisn}', '${s.nama_siswa.replace(/'/g, "\\'")}')" 
@@ -1594,29 +1621,49 @@
       }).join('');
     }
 
-    function handleGuruConfirmDirect(nisn, status) {
-      showLoading(true, 'Menyinkronkan status berkas siswa...');
-      setTimeout(() => {
-        showLoading(false);
-        const cleanNISN = nisn.replace(/^0+/, '') || '0';
-        const nowIso = new Date().toISOString();
+    async function handleGuruConfirmDirect(nisn, status) {
+      showLoading(true, 'Menyinkronkan status berkas ke Google Spreadsheet...');
 
-        localVerifications[nisn] = {
-          status: status,
-          note: '',
-          confirmed_at: nowIso,
-          validator_role: 'guru'
-        };
-        localVerifications[cleanNISN] = localVerifications[nisn];
-        saveStateToCache();
+      const cleanNISN = nisn.replace(/^0+/, '') || '0';
+      const nowIso = new Date().toISOString();
 
-        renderGuruTable();
-        if (currentAdminSession) {
-          updateAdminStatistics();
-          renderAdminHasilTable();
+      // Simpan lokal
+      localVerifications[nisn] = {
+        status: status,
+        note: '',
+        confirmed_at: nowIso,
+        validator_role: 'guru'
+      };
+      localVerifications[cleanNISN] = localVerifications[nisn];
+      saveStateToCache();
+
+      // Kirim ke Google Spreadsheet backend
+      if (GAS_ENDPOINT_URL && GAS_ENDPOINT_URL.trim().startsWith("http")) {
+        try {
+          await fetch(GAS_ENDPOINT_URL, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'studentConfirm',
+              nisn: nisn,
+              status: status,
+              note: '',
+              validator_role: 'guru'
+            })
+          });
+        } catch (err) {
+          console.warn("Gagal sinkron pengesahan guru ke GAS:", err);
         }
-        showToast(`Berkas NISN ${nisn} berhasil disahkan!`, 'success');
-      }, 300);
+      }
+
+      showLoading(false);
+      renderGuruTable();
+      if (currentAdminSession) {
+        updateAdminStatistics();
+        renderAdminHasilTable();
+      }
+      showToast(`Berkas NISN ${nisn} berhasil disahkan dan tersimpan permanen!`, 'success');
     }
 
     function openGuruRejectModal(nisn, nama) {
@@ -1636,7 +1683,7 @@
       if (modal) modal.classList.add('hidden');
     }
 
-    function submitGuruRejectModal() {
+    async function submitGuruRejectModal() {
       if (!activeRejectNISN) return;
       const input = document.getElementById('guruRejectNoteInput');
       const note = input ? input.value.trim() : '';
@@ -1646,29 +1693,49 @@
         return;
       }
 
-      showLoading(true, 'Menyimpan catatan penolakan berkas...');
-      setTimeout(() => {
-        showLoading(false);
-        const cleanNISN = activeRejectNISN.replace(/^0+/, '') || '0';
-        const nowIso = new Date().toISOString();
+      showLoading(true, 'Menyimpan catatan penolakan ke Google Spreadsheet...');
 
-        localVerifications[activeRejectNISN] = {
-          status: 'SALAH',
-          note: note,
-          confirmed_at: nowIso,
-          validator_role: 'guru'
-        };
-        localVerifications[cleanNISN] = localVerifications[activeRejectNISN];
-        saveStateToCache();
+      const targetNISN = activeRejectNISN;
+      const cleanNISN = targetNISN.replace(/^0+/, '') || '0';
+      const nowIso = new Date().toISOString();
 
-        closeGuruRejectModal();
-        renderGuruTable();
-        if (currentAdminSession) {
-          updateAdminStatistics();
-          renderAdminHasilTable();
+      localVerifications[targetNISN] = {
+        status: 'SALAH',
+        note: note,
+        confirmed_at: nowIso,
+        validator_role: 'guru'
+      };
+      localVerifications[cleanNISN] = localVerifications[targetNISN];
+      saveStateToCache();
+
+      // Kirim permanen ke Google Spreadsheet
+      if (GAS_ENDPOINT_URL && GAS_ENDPOINT_URL.trim().startsWith("http")) {
+        try {
+          await fetch(GAS_ENDPOINT_URL, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'studentConfirm',
+              nisn: targetNISN,
+              status: 'SALAH',
+              note: note,
+              validator_role: 'guru'
+            })
+          });
+        } catch (err) {
+          console.warn("Gagal sinkron koreksi guru ke GAS:", err);
         }
-        showToast('Catatan koreksi berhasil disimpan dan status siswa tersinkron.', 'success');
-      }, 300);
+      }
+
+      showLoading(false);
+      closeGuruRejectModal();
+      renderGuruTable();
+      if (currentAdminSession) {
+        updateAdminStatistics();
+        renderAdminHasilTable();
+      }
+      showToast('Catatan koreksi berhasil disimpan permanen dan status siswa terkunci.', 'success');
     }
 
     function exportGuruSummaryExcel() {
@@ -1909,7 +1976,6 @@
       });
     }
 
-    // Handle Upload Tunggal Admin
     async function handleAdminSingleUpload(e) {
       if (e) e.preventDefault();
 
@@ -2037,7 +2103,6 @@
       showToast('Berkas dokumen berhasil dihapus.', 'info');
     }
 
-    // Modal Bersihkan Data
     function openClearAllConfirmModal() {
       document.getElementById('modalConfirmClear').classList.remove('hidden');
     }
@@ -2121,30 +2186,52 @@
         return `
           <tr class="hover:bg-slate-800/40 transition-colors">
             <td class="p-3">
-              <strong class="text-slate-100 block font-bold">${r.nama_siswa}</strong>
+              <strong class="text-slate-100 font-bold block">${r.nama_siswa}</strong>
               <span class="text-slate-400 font-mono text-[11px]">NISN: ${r.nisn} (${r.kelas})</span>
             </td>
             <td class="p-3">${badge}</td>
             <td class="p-3 text-slate-300 font-medium max-w-xs break-words">${r.note}</td>
             <td class="p-3 text-slate-400 font-mono text-[11px]">${r.confirmed_at}</td>
             <td class="p-3 text-right">
-              ${r.status !== 'PENDING' ? `
-                <button onclick="adminResetStudentLock('${r.nisn}')" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold text-[11px]">
-                  Buka Kunci
-                </button>
-              ` : '<span class="text-slate-600 text-xs italic">-</span>'}
+              <button 
+                onclick="adminResetStudentLock('${r.nisn}')" 
+                class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[11px] font-semibold transition-all"
+                title="Buka Kunci Verifikasi Siswa"
+              >
+                Reset Kunci
+              </button>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function adminResetStudentLock(nisn) {
+    async function adminResetStudentLock(nisn) {
+      showLoading(true, 'Membuka kunci verifikasi siswa...');
+
       const clean = nisn.replace(/^0+/, '') || '0';
       delete localVerifications[nisn];
       delete localVerifications[clean];
       saveStateToCache();
 
+      // Reset di Google Spreadsheet backend
+      if (GAS_ENDPOINT_URL && GAS_ENDPOINT_URL.trim().startsWith("http")) {
+        try {
+          await fetch(GAS_ENDPOINT_URL, {
+            method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'adminResetLock',
+              nisn: nisn
+            })
+          });
+        } catch (err) {
+          console.warn("Gagal mereset status kunci di Google Spreadsheet:", err);
+        }
+      }
+
+      showLoading(false);
       renderAdminHasilTable();
       updateAdminStatistics();
       if (currentGuruSession) renderGuruTable();

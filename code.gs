@@ -117,13 +117,13 @@ function doGet(e) {
       return setupDatabase();
     }
 
+    if (action === 'getAllData' || action === 'getAllDocuments') {
+      return handleGetAllData();
+    }
+
     if (action === 'searchNISN') {
       const nisn = (params.nisn || '').trim();
       return handleSearchNISN(nisn);
-    }
-
-    if (action === 'getAllDocuments') {
-      return handleGetAllDocuments(params);
     }
 
     if (action === 'getStudentsSummary') {
@@ -204,15 +204,21 @@ function handleSearchNISN(nisn) {
 
   const documents = [];
   let studentProfile = null;
+  const cleanTargetNISN = String(nisn).trim().replace(/^'/, '');
 
   for (let i = 1; i < values.length; i++) {
     const row = values[i];
-    const rowNISN = String(row[1]).trim();
+    const rowNISN = String(row[1]).trim().replace(/^'/, '');
 
-    if (rowNISN === nisn) {
+    // Pencocokan fleksibel jika NISN diformat angka atau teks dengan leading zeros
+    const isMatch = (rowNISN === cleanTargetNISN) ||
+                    (rowNISN.padStart(10, '0') === cleanTargetNISN.padStart(10, '0')) ||
+                    (rowNISN.replace(/^0+/, '') === cleanTargetNISN.replace(/^0+/, ''));
+
+    if (isMatch) {
       if (!studentProfile) {
         studentProfile = {
-          nisn: rowNISN,
+          nisn: rowNISN.padStart(10, '0'),
           nama_siswa: row[2],
           kelas: row[3]
         };
@@ -220,7 +226,7 @@ function handleSearchNISN(nisn) {
 
       documents.push({
         id: row[0],
-        nisn: rowNISN,
+        nisn: rowNISN.padStart(10, '0'),
         nama_siswa: row[2],
         kelas: row[3],
         jenis_dokumen: row[4],
@@ -239,9 +245,12 @@ function handleSearchNISN(nisn) {
   if (sheetVerif) {
     const verifValues = sheetVerif.getDataRange().getValues();
     for (let j = 1; j < verifValues.length; j++) {
-      if (String(verifValues[j][0]).trim() === nisn) {
+      const vNisn = String(verifValues[j][0]).trim().replace(/^'/, '');
+      const isVerifMatch = (vNisn === cleanTargetNISN) || 
+                           (vNisn.padStart(10, '0') === cleanTargetNISN.padStart(10, '0'));
+      if (isVerifMatch) {
         verificationRecord = {
-          nisn: String(verifValues[j][0]).trim(),
+          nisn: vNisn.padStart(10, '0'),
           nama_siswa: verifValues[j][1],
           kelas: verifValues[j][2],
           status_siswa: verifValues[j][3] || 'PENDING',
@@ -268,59 +277,78 @@ function handleSearchNISN(nisn) {
 }
 
 /**
- * Mengambil daftar arsip dokumen untuk Portal Admin TU & Guru dengan filter kelas dan pencarian.
+ * Mengambil seluruh data arsip berkas dan status verifikasi langsung dari Google Spreadsheet
+ * agar saat browser di-reload, seluruh data yang telah diimpor terpanggil kembali secara utuh.
  */
-function handleGetAllDocuments(params) {
+function handleGetAllData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(SHEET_STUDENTS);
-  if (!sheet) {
-    return createJsonResponse({ status: 'success', data: { documents: [], total: 0 } });
+  let sheetStudents = ss.getSheetByName(SHEET_STUDENTS);
+  let sheetVerif = ss.getSheetByName(SHEET_VERIFICATION);
+
+  if (!sheetStudents) {
+    setupDatabase();
+    sheetStudents = ss.getSheetByName(SHEET_STUDENTS);
+    sheetVerif = ss.getSheetByName(SHEET_VERIFICATION);
   }
 
-  const values = sheet.getDataRange().getValues();
-  if (values.length <= 1) {
-    return createJsonResponse({ status: 'success', data: { documents: [], total: 0 } });
-  }
-
-  const filterKelas = params.kelas || 'ALL';
-  const query = (params.query || '').toLowerCase().trim();
-
+  const docValues = sheetStudents.getDataRange().getValues();
   const documents = [];
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i];
-    const doc = {
-      id: row[0],
-      nisn: String(row[1]).trim(),
-      nama_siswa: row[2],
-      kelas: row[3],
-      jenis_dokumen: row[4],
-      file_id: row[5],
-      file_url: row[6],
-      file_name: row[7],
-      uploaded_at: row[8],
-      uploaded_by: row[9]
-    };
 
-    // Filter Kelas
-    if (filterKelas !== 'ALL' && doc.kelas !== filterKelas) {
-      continue;
+  for (let i = 1; i < docValues.length; i++) {
+    const row = docValues[i];
+    if (!row[0] && !row[1]) continue;
+
+    let nisnStr = String(row[1]).trim().replace(/^'/, '');
+    if (nisnStr.length > 0 && nisnStr.length < 10 && !isNaN(nisnStr)) {
+      nisnStr = nisnStr.padStart(10, '0');
     }
 
-    // Filter Query Pencarian
-    if (query) {
-      const match = doc.nama_siswa.toLowerCase().includes(query) ||
-                    doc.nisn.includes(query) ||
-                    doc.jenis_dokumen.toLowerCase().includes(query);
-      if (!match) continue;
-    }
+    documents.push({
+      id: String(row[0]),
+      nisn: nisnStr,
+      nama_siswa: String(row[2] || ''),
+      kelas: String(row[3] || ''),
+      jenis_dokumen: String(row[4] || ''),
+      file_id: String(row[5] || ''),
+      file_url: String(row[6] || ''),
+      file_name: String(row[7] || ''),
+      uploaded_at: String(row[8] || ''),
+      uploaded_by: String(row[9] || '')
+    });
+  }
 
-    documents.push(doc);
+  const verifications = {};
+  if (sheetVerif) {
+    const verifValues = sheetVerif.getDataRange().getValues();
+    for (let j = 1; j < verifValues.length; j++) {
+      const vRow = verifValues[j];
+      if (!vRow[0]) continue;
+
+      let vNisn = String(vRow[0]).trim().replace(/^'/, '');
+      if (vNisn.length > 0 && vNisn.length < 10 && !isNaN(vNisn)) {
+        vNisn = vNisn.padStart(10, '0');
+      }
+
+      verifications[vNisn] = {
+        nisn: vNisn,
+        nama_siswa: String(vRow[1] || ''),
+        kelas: String(vRow[2] || ''),
+        status_siswa: String(vRow[3] || 'PENDING'),
+        waktu_siswa: String(vRow[4] || ''),
+        catatan_siswa: String(vRow[5] || ''),
+        status_guru: String(vRow[6] || 'PENDING'),
+        catatan_guru: String(vRow[7] || ''),
+        waktu_guru: String(vRow[8] || ''),
+        divalidasi_oleh: String(vRow[9] || '')
+      };
+    }
   }
 
   return createJsonResponse({
     status: 'success',
     data: {
       documents: documents,
+      verifications: verifications,
       total: documents.length
     }
   });
@@ -407,18 +435,24 @@ function handleBatchImportDocuments(documents) {
 
     for (let i = 0; i < documents.length; i++) {
       const doc = documents[i];
-      const nisn = String(doc.nisn).trim();
-      const nama = String(doc.nama_siswa).trim();
-      const kelas = doc.kelas || 'XII FL 1';
-      const jenis = doc.jenis_dokumen || 'Ijazah Asli';
-      const fileId = doc.file_id || '';
-      const fileUrl = doc.file_url || (fileId ? ('https://lh3.googleusercontent.com/d/' + fileId) : '');
+      let nisn = String(doc.nisn || '').trim();
+      const nama = String(doc.nama_siswa || '').trim();
+      const kelas = String(doc.kelas || 'XII FL 1').trim();
+      const jenis = String(doc.jenis_dokumen || 'Ijazah Asli').trim();
+      const fileId = String(doc.file_id || '').trim();
+      let fileUrl = String(doc.file_url || '').trim();
+      if (!fileUrl && fileId) {
+        fileUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
+      }
       const fileName = doc.file_name || (jenis.toLowerCase().replace(/\s+/g, '_') + '_' + nisn + '.jpg');
       const docId = doc.id || ('DOC-' + new Date().getFullYear() + '-B' + Math.floor(1000 + Math.random() * 9000));
       const uploader = doc.uploaded_by || 'admin_bulk_import';
 
+      // Mengawali NISN dengan kutip tunggal agar Google Sheets menyimpannya sebagai teks permanen (tidak membuang angka 0 di depan)
+      const formattedNISN = nisn.startsWith("'") ? nisn : ("'" + nisn);
+
       rowsToAppend.push([
-        docId, nisn, nama, kelas, jenis,
+        docId, formattedNISN, nama, kelas, jenis,
         fileId, fileUrl, fileName, nowIso, uploader
       ]);
     }
@@ -430,7 +464,7 @@ function handleBatchImportDocuments(documents) {
 
     return createJsonResponse({
       status: 'success',
-      message: 'Berhasil mengimpor ' + rowsToAppend.length + ' berkas arsip secara massal!',
+      message: 'Berhasil menyimpan permanen ' + rowsToAppend.length + ' berkas arsip ke Google Spreadsheet!',
       total_imported: rowsToAppend.length
     });
   } catch (error) {

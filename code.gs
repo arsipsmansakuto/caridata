@@ -288,7 +288,7 @@ function handleBatchImportDocuments(documents) {
       const timestamp = doc.uploaded_at || new Date().toISOString();
 
       if (matchedRowIdx !== -1) {
-        // Timpa baris data lama
+        // Timpa baris data lama (in-place replacement)
         sheetStudents.getRange(matchedRowIdx, 3, 1, 8).setValues([[
           doc.nama_siswa || '',
           doc.kelas || '',
@@ -406,7 +406,6 @@ function handleUploadDocument(payload) {
     const docId = `DOC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const nowIso = new Date().toISOString();
 
-    // Periksa apakah berkas sejenis untuk siswa ini sudah ada (Upsert)
     const existingData = sheetStudents.getDataRange().getValues();
     const docCleanCompare = cleanNISN.replace(/^0+/, '') || '0';
     const cleanJenis = String(payload.jenis_dokumen).trim().toLowerCase();

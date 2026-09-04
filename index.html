@@ -724,20 +724,44 @@
 
         <!-- SUB-TAB 2: HASIL SISWA (REKAP VERIFIKASI) -->
         <div id="adminSubTabHasil" class="hidden space-y-4">
-          <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h4 class="text-sm font-bold text-white">Rekapitulasi Respon Verifikasi Siswa</h4>
               <p class="text-xs text-slate-400">Daftar siswa yang telah memberikan konfirmasi atau laporan sanggahan.</p>
             </div>
-            <button 
-              onclick="exportAllVerifikasiExcel()" 
-              class="px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span>Export Hasil (XLSX)</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-3">
+              <!-- Pengaturan Filter & Sortir Hasil Siswa -->
+              <div class="flex items-center gap-2">
+                <label for="adminHasilSortBy" class="text-xs font-semibold text-slate-400 whitespace-nowrap">Filter &amp; Sortir:</label>
+                <select 
+                  id="adminHasilSortBy" 
+                  onchange="renderAdminHasilTable()" 
+                  class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-200 text-xs font-medium focus:outline-none focus:border-sky-500"
+                >
+                  <option value="status_pending_class">Hanya Belum Respon (Urut Kelas)</option>
+                  <option value="status_benar_class">Hanya Sesuai (Urut Kelas)</option>
+                  <option value="status_pending_benar_class">Belum Respon &amp; Sesuai (Urut Kelas)</option>
+                  <option value="all_class_asc">Semua Status (Urut Kelas)</option>
+                  <option value="name_asc">Semua - Nama Siswa (A - Z)</option>
+                  <option value="name_desc">Semua - Nama Siswa (Z - A)</option>
+                  <option value="class_asc">Semua - Kelas (A - Z)</option>
+                  <option value="class_desc">Semua - Kelas (Z - A)</option>
+                  <option value="status_benar">Semua - Status: Sesuai Dahulu</option>
+                  <option value="status_salah">Semua - Status: Laporan Salah Dahulu</option>
+                  <option value="status_pending">Semua - Status: Belum Respon Dahulu</option>
+                </select>
+              </div>
+
+              <button 
+                onclick="exportAllVerifikasiExcel()" 
+                class="px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Export Hasil (XLSX)</span>
+              </button>
+            </div>
           </div>
 
           <div class="rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden shadow-xl">
@@ -973,7 +997,7 @@
      */
 
     // Placeholder URL Google Apps Script Backend (Isi dengan link Web App /exec Anda)
-    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxx7Sat8JBWxiBuawddeWf8x8ul2snIyS45Lzl0t_jSUC9hM31mr4pFqtUFLYud0_Xh/exec";
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxRfmDIyzzp0Y_UFiOaql6bI_IuY0BJwOBH_Hjz8B7uLSzU29E0PL0hDSaWeFVHKSAs/exec";
 
     // Kunci Penyimpanan Cache Persistensi Browser
     const STORAGE_KEY_DOCS = "portal_arsip_docs_v4";
@@ -2146,8 +2170,10 @@
       const tbody = document.getElementById('adminHasilTableBody');
       if (!tbody) return;
 
+      const sortBy = document.getElementById('adminHasilSortBy')?.value || 'status_pending_class';
+
       const siswaSet = new Set(localDocuments.map(d => d.nisn));
-      const rows = [];
+      let rows = [];
 
       siswaSet.forEach(n => {
         const doc = localDocuments.find(d => d.nisn === n);
@@ -2164,10 +2190,56 @@
         });
       });
 
+      // Filter ketat sesuai opsi yang dipilih
+      if (sortBy === 'status_pending_class') {
+        // HANYA tampilkan siswa yang Belum Respon (Sesuai & Salah disembunyikan)
+        rows = rows.filter(r => r.status === 'PENDING' || !r.status);
+      } else if (sortBy === 'status_benar_class') {
+        // HANYA tampilkan siswa yang Sudah Sesuai (Belum Respon & Salah disembunyikan)
+        rows = rows.filter(r => r.status === 'BENAR');
+      } else if (sortBy === 'status_pending_benar_class') {
+        // HANYA tampilkan Belum Respon dan Sesuai (Laporan Salah disembunyikan)
+        rows = rows.filter(r => r.status === 'PENDING' || !r.status || r.status === 'BENAR');
+      }
+
+      // Mengurutkan data hasil siswa berdasarkan kelas dan nama
+      rows.sort((a, b) => {
+        if (sortBy === 'status_pending_class' || sortBy === 'status_benar_class' || sortBy === 'all_class_asc' || sortBy === 'class_asc') {
+          return String(a.kelas || '').localeCompare(String(b.kelas || '')) || String(a.nama_siswa || '').localeCompare(String(b.nama_siswa || ''));
+        }
+
+        if (sortBy === 'status_pending_benar_class') {
+          const priority = { 'PENDING': 0, 'BENAR': 1 };
+          const pA = priority[a.status] !== undefined ? priority[a.status] : 0;
+          const pB = priority[b.status] !== undefined ? priority[b.status] : 0;
+          if (pA !== pB) return pA - pB;
+          return String(a.kelas || '').localeCompare(String(b.kelas || '')) || String(a.nama_siswa || '').localeCompare(String(b.nama_siswa || ''));
+        }
+
+        if (sortBy === 'class_desc') {
+          return String(b.kelas || '').localeCompare(String(a.kelas || '')) || String(a.nama_siswa || '').localeCompare(String(b.nama_siswa || ''));
+        }
+        if (sortBy === 'name_asc') return String(a.nama_siswa || '').localeCompare(String(b.nama_siswa || ''));
+        if (sortBy === 'name_desc') return String(b.nama_siswa || '').localeCompare(String(a.nama_siswa || ''));
+        if (sortBy === 'status_benar') {
+          const priority = { 'BENAR': 1, 'SALAH': 2, 'PENDING': 3 };
+          return (priority[a.status] || 99) - (priority[b.status] || 99);
+        }
+        if (sortBy === 'status_salah') {
+          const priority = { 'SALAH': 1, 'BENAR': 2, 'PENDING': 3 };
+          return (priority[a.status] || 99) - (priority[b.status] || 99);
+        }
+        if (sortBy === 'status_pending') {
+          const priority = { 'PENDING': 1, 'SALAH': 2, 'BENAR': 3 };
+          return (priority[a.status] || 99) - (priority[b.status] || 99);
+        }
+        return 0;
+      });
+
       if (rows.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="p-8 text-center text-slate-500 italic">Belum ada data verifikasi siswa.</td>
+            <td colspan="5" class="p-8 text-center text-slate-500 italic">Tidak ada data siswa yang cocok dengan filter yang dipilih.</td>
           </tr>
         `;
         return;

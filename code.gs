@@ -4,7 +4,7 @@
  * SMA Negeri 1 Kutowinangun
  */
 
-// Nama-nama Tab Lembar Kerja
+// Nama Lembar Kerja Database Google Spreadsheet
 const SHEET_STUDENTS = "STUDENTS_DATA";
 const SHEET_VERIF = "VERIFIKASI_STATUS";
 const SHEET_ADMINS = "ADMIN_USERS";
@@ -13,13 +13,14 @@ const SHEET_ADMINS = "ADMIN_USERS";
 const DRIVE_FOLDER_NAME = "ARSIP_BERKAS_SISWA_DRIVE";
 
 /**
- * Penanganan permintaan GET (Pencarian arsip oleh siswa & pengambilan seluruh data master saat reload).
+ * Penanganan permintaan HTTP GET
+ * Digunakan untuk pemanggilan seluruh data saat inisialisasi/reload dan pencarian berkas mandiri siswa.
  */
 function doGet(e) {
   try {
     const action = e && e.parameter ? e.parameter.action : '';
 
-    // Ambil seluruh data dokumen & status verifikasi saat reload / inisialisasi aplikasi
+    // Ambil seluruh data dokumen & status verifikasi saat reload aplikasi
     if (action === 'getAllData') {
       return handleGetAllData();
     }
@@ -56,21 +57,21 @@ function handleGetAllData() {
 
   const studentRows = sheetStudents.getDataRange().getValues();
   const documents = [];
-  
-  // Baca baris data dokumen (mulai baris kedua setelah header)
+
+  // Ekstrak baris data berkas dokumen (mulai baris kedua setelah header kolom)
   for (let i = 1; i < studentRows.length; i++) {
     const row = studentRows[i];
     if (row[0] && row[1]) {
       const rawNisn = String(row[1]).trim().replace(/^'/, '');
-      const rawFileUrl = String(row[6]).trim();
-      const rawFileId = String(row[5]).trim();
-      
+      const rawFileId = String(row[5] || '').trim();
+      const rawFileUrl = String(row[6] || '').trim();
+
       documents.push({
         id: String(row[0]),
         nisn: rawNisn,
-        nama_siswa: String(row[2]),
-        kelas: String(row[3]),
-        jenis_dokumen: String(row[4]),
+        nama_siswa: String(row[2] || ''),
+        kelas: String(row[3] || ''),
+        jenis_dokumen: String(row[4] || ''),
         file_id: rawFileId,
         file_url: rawFileUrl || (rawFileId ? ('https://lh3.googleusercontent.com/d/' + rawFileId) : ''),
         file_name: String(row[7] || ''),
@@ -82,16 +83,31 @@ function handleGetAllData() {
 
   const verifRows = sheetVerif.getDataRange().getValues();
   const verifications = {};
+
   for (let j = 1; j < verifRows.length; j++) {
     const vRow = verifRows[j];
     if (vRow[0]) {
       const vNisn = String(vRow[0]).trim().replace(/^'/, '');
-      verifications[vNisn] = {
+      let confirmedAtIso = '';
+
+      if (vRow[3]) {
+        try {
+          confirmedAtIso = new Date(vRow[3]).toISOString();
+        } catch (errDate) {
+          confirmedAtIso = String(vRow[3]);
+        }
+      }
+
+      const verifObj = {
         status: String(vRow[1] || 'PENDING'),
         note: String(vRow[2] || ''),
-        confirmed_at: vRow[3] ? new Date(vRow[3]).toISOString() : '',
+        confirmed_at: confirmedAtIso,
         validator_role: String(vRow[4] || 'siswa')
       };
+
+      verifications[vNisn] = verifObj;
+      const cleanVNisn = vNisn.replace(/^0+/, '') || '0';
+      verifications[cleanVNisn] = verifObj;
     }
   }
 
@@ -103,7 +119,7 @@ function handleGetAllData() {
 }
 
 /**
- * Mencari berkas siswa berdasarkan NISN dari Google Spreadsheet.
+ * Mencari berkas siswa berdasarkan NISN dari Google Spreadsheet secara fleksibel.
  */
 function handleSearchNISN(searchNISN) {
   if (!searchNISN) {
@@ -133,27 +149,29 @@ function handleSearchNISN(searchNISN) {
     if (cleanCellNISN === cleanQuery || cellNISN === rawQuery) {
       const fileId = String(row[5] || '').trim();
       const fileUrl = String(row[6] || '').trim();
+
       matchedDocs.push({
         id: String(row[0]),
         nisn: cellNISN,
-        nama_siswa: String(row[2]),
-        kelas: String(row[3]),
-        jenis_dokumen: String(row[4]),
+        nama_siswa: String(row[2] || ''),
+        kelas: String(row[3] || ''),
+        jenis_dokumen: String(row[4] || ''),
         file_id: fileId,
         file_url: fileUrl || (fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : ''),
         file_name: String(row[7] || ''),
         uploaded_at: row[8] ? new Date(row[8]).toISOString() : '',
-        uploaded_by: String(row[9] || 'admin')
+        uploaded_by: String(row[9] || 'admin_tu')
       });
     }
   }
 
-  // Ambil status verifikasi siswa
   let verificationInfo = { status: 'PENDING', note: '', confirmed_at: '', validator_role: '' };
   const verifRows = sheetVerif.getDataRange().getValues();
+
   for (let j = 1; j < verifRows.length; j++) {
     const vNISN = String(verifRows[j][0] || '').trim().replace(/^'/, '');
     const cleanVNISN = vNISN.replace(/^0+/, '') || '0';
+
     if (cleanVNISN === cleanQuery || vNISN === rawQuery) {
       verificationInfo = {
         status: String(verifRows[j][1] || 'PENDING'),
@@ -174,7 +192,8 @@ function handleSearchNISN(searchNISN) {
 }
 
 /**
- * Penanganan permintaan POST (Unggah berkas, autentikasi login, import batch, hapus, dan verifikasi).
+ * Penanganan permintaan HTTP POST
+ * Mendukung autentikasi, unggah berkas tunggal, impor massal (upsert), hapus, dan konfirmasi.
  */
 function doPost(e) {
   try {
@@ -190,7 +209,7 @@ function doPost(e) {
     switch (action) {
       case 'login':
         return handleLoginAuth(payload.username, payload.password, payload.expectedRole);
-      
+
       case 'uploadDocument':
         return handleUploadDocument(payload);
 
@@ -222,7 +241,8 @@ function doPost(e) {
 }
 
 /**
- * Mengimpor berkas kolektif dari Excel/CSV dengan mekanisme Upsert (menimpa berkas jika kombinasi NISN dan jenis dokumen sudah ada).
+ * Mengimpor berkas kolektif dari Excel dengan mekanisme Upsert
+ * Berkas baru dengan kombinasi NISN & jenis dokumen yang sama otomatis menimpa versi lama.
  */
 function handleBatchImportDocuments(documents) {
   if (!Array.isArray(documents) || documents.length === 0) {
@@ -258,7 +278,7 @@ function handleBatchImportDocuments(documents) {
         const rowJenis = String(existingData[r][4] || '').trim().toLowerCase();
 
         if ((rowCleanCompare === docCleanCompare || rowNISN === cleanNISN) && rowJenis === docJenis) {
-          matchedRowIdx = r + 1; // 1-based index di Google Sheets
+          matchedRowIdx = r + 1; // 1-based index sheet
           break;
         }
       }
@@ -268,7 +288,7 @@ function handleBatchImportDocuments(documents) {
       const timestamp = doc.uploaded_at || new Date().toISOString();
 
       if (matchedRowIdx !== -1) {
-        // Update baris yang sudah ada (menimpa data lama)
+        // Timpa baris data lama
         sheetStudents.getRange(matchedRowIdx, 3, 1, 8).setValues([[
           doc.nama_siswa || '',
           doc.kelas || '',
@@ -281,7 +301,7 @@ function handleBatchImportDocuments(documents) {
         ]]);
         updatedCount++;
       } else {
-        // Tambah sebagai baris baru
+        // Tambahkan baris baru
         const docId = doc.id || `DOC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
         rowsToAppend.push([
           docId,
@@ -318,7 +338,7 @@ function handleBatchImportDocuments(documents) {
 }
 
 /**
- * Membersihkan seluruh baris data arsip di lembar STUDENTS_DATA (menyisakan baris header).
+ * Membersihkan seluruh baris data arsip di tab STUDENTS_DATA (menyisakan baris header).
  */
 function handleClearAllDocuments() {
   const lock = LockService.getScriptLock();
@@ -349,7 +369,7 @@ function handleClearAllDocuments() {
 }
 
 /**
- * Mengunggah berkas tunggal (Base64) ke folder Google Drive dan mencatatnya ke Spreadsheet.
+ * Mengunggah berkas tunggal ke folder Google Drive dan mencatat baris data ke Spreadsheet.
  */
 function handleUploadDocument(payload) {
   const lock = LockService.getScriptLock();
@@ -445,7 +465,7 @@ function handleUploadDocument(payload) {
 }
 
 /**
- * Memperbarui data berkas dokumen yang sudah tersimpan.
+ * Memperbarui rincian data berkas dokumen yang sudah ada di Spreadsheet.
  */
 function handleEditDocument(payload) {
   const lock = LockService.getScriptLock();
@@ -490,7 +510,7 @@ function handleEditDocument(payload) {
 }
 
 /**
- * Menghapus baris berkas dari Spreadsheet dan memindahkan file di Drive ke kotak sampah.
+ * Menghapus dokumen dari Spreadsheet dan memindahkan file di Google Drive ke kotak sampah.
  */
 function handleDeleteDocument(docId) {
   const lock = LockService.getScriptLock();
@@ -517,7 +537,7 @@ function handleDeleteDocument(docId) {
       return createJsonResponse({ status: 'error', message: 'Dokumen tidak ditemukan.' });
     }
 
-    // Hapus file di Drive jika fileId valid
+    // Pindahkan berkas Google Drive ke trash jika ID valid
     if (fileIdToDelete && fileIdToDelete.length > 15) {
       try {
         const driveFile = DriveApp.getFileById(fileIdToDelete);
@@ -538,7 +558,7 @@ function handleDeleteDocument(docId) {
 }
 
 /**
- * Menyimpan konfirmasi mandiri siswa atau validasi guru (BENAR / SALAH) dan mengunci status.
+ * Menyimpan konfirmasi mandiri siswa atau pengesahan guru (BENAR / SALAH) dan mengunci status secara permanen.
  */
 function handleStudentConfirmation(nisn, status, note, role) {
   const lock = LockService.getScriptLock();
@@ -599,7 +619,7 @@ function handleStudentConfirmation(nisn, status, note, role) {
 }
 
 /**
- * Mereset status kunci verifikasi siswa agar siswa/guru dapat mengonfirmasi ulang.
+ * Mereset status kunci verifikasi siswa agar siswa atau guru dapat melakukan konfirmasi ulang.
  */
 function handleAdminResetLock(nisn) {
   const lock = LockService.getScriptLock();
@@ -638,7 +658,7 @@ function handleAdminResetLock(nisn) {
 }
 
 /**
- * Memvalidasi kredensial pengguna (admin atau guru) berdasarkan data di tab ADMIN_USERS.
+ * Memvalidasi kredensial login akun staf admin TU atau guru dari tab ADMIN_USERS.
  */
 function handleLoginAuth(username, password, expectedRole) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -678,7 +698,7 @@ function handleLoginAuth(username, password, expectedRole) {
 
 /**
  * Inisialisasi Database Otomatis (Zero-Config).
- * Jalankan fungsi ini sekali di Apps Script untuk membuat semua tab sheet dan folder Drive secara mandiri.
+ * Jalankan fungsi ini sekali pada editor Google Apps Script untuk membuat lembar kerja dan folder Drive.
  */
 function setupDatabase() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -731,19 +751,19 @@ function setupDatabase() {
     sheetAdmins.getRange("A1:D1").setFontWeight("bold").setBackground("#0f172a").setFontColor("#ffffff");
     sheetAdmins.setFrozenRows(1);
 
-    // Tambahkan Akun Bawaan Standar
+    // Akun Bawaan Awal
     sheetAdmins.appendRow(["admin", "123456", "admin", "Administrator Tata Usaha"]);
     sheetAdmins.appendRow(["guru", "123456", "guru", "Wali Kelas / Guru"]);
   }
 
-  // 4. Buat Folder Google Drive jika belum ada
+  // 4. Inisialisasi Folder Google Drive
   getOrCreateDriveFolder(DRIVE_FOLDER_NAME);
 
-  console.log("Database dan Folder Drive berhasil disiapkan secara otomatis.");
+  console.log("Inisialisasi Database dan Folder Google Drive selesai.");
 }
 
 /**
- * Helper untuk mendapatkan atau membuat folder di Google Drive dengan izin akses publik tautan.
+ * Helper untuk membuat atau mengambil folder arsip Google Drive dengan hak akses publik tautan.
  */
 function getOrCreateDriveFolder(folderName) {
   const folders = DriveApp.getFoldersByName(folderName);
@@ -758,7 +778,7 @@ function getOrCreateDriveFolder(folderName) {
 }
 
 /**
- * Helper untuk membuat respon JSON standar.
+ * Helper untuk memformat balasan JSON standar.
  */
 function createJsonResponse(data) {
   return ContentService

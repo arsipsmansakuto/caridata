@@ -732,7 +732,31 @@
             <p class="text-xs text-slate-400 mt-0.5">Petugas Aktif: <strong id="adminDisplayName" class="text-slate-200">Administrator TU</strong> • Sistem Terkoneksi</p>
           </div>
 
-          <div class="flex items-center gap-2.5">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button 
+              type="button" 
+              onclick="downloadBulkImportTemplate()"
+              class="px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+              title="Unduh file template Excel untuk pengisian data arsip kolektif"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <span>Unduh Template Excel</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="openBulkImportModal()"
+              class="px-3 py-2 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+              title="Unggah berkas arsip secara massal menggunakan file Excel"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              <span>Import Kolektif (Excel)</span>
+            </button>
+
             <button 
               type="button" 
               onclick="exportMasterExcel()"
@@ -811,13 +835,27 @@
 
             <!-- COLUMN LEFT: FORM UNGGAH BERKAS BARU -->
             <div class="lg:col-span-1 glass-panel rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-              <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
-                <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
+              <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <h4 class="text-sm font-black text-white">Unggah Berkas ke Drive</h4>
                 </div>
-                <h4 class="text-sm font-black text-white">Unggah Berkas ke Drive</h4>
+                
+                <button 
+                  type="button" 
+                  onclick="openBulkImportModal()" 
+                  class="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all shadow-sm active:scale-95"
+                  title="Buka form import berkas kolektif via Excel"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                  </svg>
+                  <span>Kolektif</span>
+                </button>
               </div>
 
               <form id="formUploadDocument" onsubmit="handleUploadSubmit(event)" class="space-y-3.5">
@@ -1232,25 +1270,182 @@
         </button>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <p class="text-slate-300">
-          Menyatakan berkas untuk siswa <strong id="guruRejectStudentName" class="text-white"></strong> (NISN: <span id="guruRejectStudentNISN" class="font-mono text-sky-400"></span>) memiliki ketidaksesuaian/kesalahan. Status siswa akan otomatis terkunci sebagai <strong>Laporan Salah</strong>.
-        </p>
+      <div class="space-y-3">
+        <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl text-xs space-y-1">
+          <div class="text-slate-400">Siswa: <strong id="guruRejectStudentName" class="text-white">-</strong></div>
+          <div class="text-slate-400">NISN: <span id="guruRejectStudentNISN" class="text-sky-400 font-mono font-bold">-</span></div>
+        </div>
 
         <div>
-          <label class="block font-bold text-rose-300 mb-1.5">Catatan Kesalahan Berkas Guru *</label>
+          <label class="block text-xs font-bold text-rose-300 mb-1.5">Catatan Kesalahan Berkas (Wajib) *</label>
           <textarea 
             id="guruRejectNoteInput" 
             rows="3" 
-            placeholder="Contoh: Hasil scan ijazah miring/terpotong, atau terdapat ketidaksesuaian nama..." 
-            class="w-full bg-slate-950/90 border border-slate-700/80 rounded-2xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
+            placeholder="Tuliskan ketidaksesuaian dokumen atau data siswa..."
+            class="w-full bg-slate-950 border border-slate-700/80 rounded-2xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 leading-relaxed"
           ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" onclick="closeGuruRejectModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all">Batal</button>
+          <button type="button" onclick="submitGuruRejectAction()" class="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-rose-600/30">Kirim & Tandai Salah</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 5: IMPORT BERKAS KOLEKTIF & TEMPLATE (z-[1000]) -->
+  <!-- ========================================== -->
+  <div id="modalBulkImport" class="fixed inset-0 z-[1000] hidden items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+    <div class="relative w-full max-w-3xl glass-panel-glow rounded-3xl p-6 shadow-2xl space-y-5 max-h-[90vh] flex flex-col">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-sm font-black text-white">Unggah & Import Berkas Kolektif (Excel / CSV)</h4>
+            <p class="text-xs text-slate-400">Pilih file data Excel untuk mengarsipkan banyak berkas siswa sekaligus ke Google Drive.</p>
+          </div>
+        </div>
+
+        <button type="button" onclick="closeBulkImportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="overflow-y-auto space-y-5 pr-1 flex-1 text-xs">
+        <!-- Step 1: Download Template -->
+        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="space-y-1">
+            <span class="inline-flex items-center gap-1 font-bold text-indigo-400 text-[11px] uppercase tracking-wider">
+              Langkah 1: Siapkan File Data
+            </span>
+            <p class="text-slate-300 font-medium">Unduh template Excel resmi jika Anda belum memiliki format kolom yang sesuai.</p>
+            <p class="text-slate-500 text-[11px]">Kolom template: NISN, Nama Siswa, Kelas (XII FL 1–10), Jenis Dokumen, Link Drive / File ID.</p>
+          </div>
+          <button 
+            type="button" 
+            onclick="downloadBulkImportTemplate()" 
+            class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center gap-1.5 shrink-0 self-start sm:self-auto active:scale-95"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span>Unduh Template Excel (.XLSX)</span>
+          </button>
+        </div>
+
+        <!-- Step 2: Upload Filled File -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block font-bold text-slate-300">Langkah 2: Ambil & Unggah File Data *</label>
+            <button 
+              type="button" 
+              onclick="triggerBulkFileInput()"
+              class="px-3 py-1 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+              </svg>
+              <span>Pilih File dari Komputer</span>
+            </button>
+          </div>
+
+          <div 
+            id="bulkDropzoneBox"
+            onclick="triggerBulkFileInput()"
+            class="border-2 border-dashed border-slate-700/80 hover:border-indigo-500 bg-slate-950/70 rounded-2xl p-5 text-center cursor-pointer transition-all hover:bg-slate-900/60"
+          >
+            <input 
+              type="file" 
+              id="inputBulkFile" 
+              accept=".xlsx, .xls, .csv" 
+              class="hidden" 
+              onchange="handleBulkExcelSelection(event)"
+            />
+            <div id="bulkFilePlaceholder" class="space-y-1.5 py-1">
+              <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto border border-indigo-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <p class="font-bold text-white text-xs">Klik di sini untuk memilih file Excel (.xlsx, .xls, .csv)</p>
+              <p class="text-[11px] text-slate-400">Atau seret langsung file data Anda ke area kotak ini.</p>
+            </div>
+
+            <div id="bulkFileLoadedInfo" class="hidden space-y-1.5 py-2">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p class="font-bold text-emerald-300 text-xs truncate max-w-md mx-auto" id="bulkLoadedFileName">nama_file.xlsx</p>
+              <p id="bulkLoadedStats" class="text-[11px] text-slate-300 font-mono">0 baris data siap diproses</p>
+              <button 
+                type="button" 
+                onclick="event.stopPropagation(); triggerBulkFileInput();" 
+                class="text-[10px] text-sky-400 hover:text-sky-300 underline font-semibold mt-1"
+              >
+                Ganti file data lain
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Data Preview Table -->
+        <div id="bulkPreviewContainer" class="hidden space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-300">Pratinjau Data Terbaca:</span>
+            <span id="bulkBadgePreviewSummary" class="text-[11px] text-indigo-300 font-mono bg-indigo-500/10 border border-indigo-500/30 px-2.5 py-0.5 rounded-lg">0 baris valid</span>
+          </div>
+
+          <div class="overflow-x-auto max-h-52 border border-slate-800 rounded-2xl bg-slate-950/80 shadow-inner">
+            <table class="w-full text-left border-collapse text-[11px]">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 font-bold uppercase bg-slate-900/80 sticky top-0">
+                  <th class="py-2.5 px-3">No</th>
+                  <th class="py-2.5 px-3">NISN</th>
+                  <th class="py-2.5 px-3">Nama Siswa</th>
+                  <th class="py-2.5 px-3">Kelas</th>
+                  <th class="py-2.5 px-3">Dokumen</th>
+                  <th class="py-2.5 px-3">Link Drive / File ID</th>
+                  <th class="py-2.5 px-3 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody id="bulkPreviewTableBody" class="divide-y divide-slate-800/60 text-slate-300 font-medium">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div class="pt-2 flex items-center justify-end gap-2">
-        <button type="button" onclick="closeGuruRejectModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all">Batal</button>
-        <button type="button" onclick="submitGuruRejectAction()" class="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-rose-600/30">Tetapkan Salah & Sinkron Siswa</button>
+      <!-- Modal Footer Actions -->
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+        <button 
+          type="button" 
+          onclick="closeBulkImportModal()" 
+          class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all"
+        >
+          Batal
+        </button>
+
+        <button 
+          type="button" 
+          id="btnExecuteBulkImport" 
+          onclick="executeBulkImport()" 
+          disabled
+          class="px-5 py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 disabled:opacity-40 disabled:pointer-events-none text-white text-xs font-bold rounded-xl shadow-lg shadow-sky-600/30 transition-all flex items-center gap-1.5 active:scale-95"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span id="btnExecuteBulkText">Proses & Simpan Semua Arsip</span>
+        </button>
       </div>
     </div>
   </div>
@@ -1260,15 +1455,15 @@
 
   <!-- GLOBAL LOADING OVERLAY (z-[9999]) -->
   <div id="globalLoadingOverlay" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-slate-950/85 backdrop-blur-md">
-    <div class="flex flex-col items-center gap-3 p-6 glass-panel-glow rounded-3xl shadow-2xl">
+    <div class="flex flex-col items-center gap-3 p-6 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl">
       <div class="w-10 h-10 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin"></div>
-      <p id="loadingOverlayText" class="text-xs font-bold text-slate-300">Memproses sinkronisasi...</p>
+      <p id="loadingOverlayText" class="text-xs font-bold text-slate-300">Memproses data...</p>
     </div>
   </div>
 
   <!-- MOBILE BOTTOM NAVIGATION (z-[40]) -->
-  <div class="md:hidden fixed bottom-3 inset-x-4 z-40">
-    <div class="bg-slate-950/90 backdrop-blur-2xl border border-slate-800/80 rounded-2xl px-4 py-2.5 shadow-2xl flex items-center justify-around">
+  <div class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-950/90 backdrop-blur-2xl border-t border-slate-800 px-6 py-2.5 shadow-2xl">
+    <div class="flex items-center justify-around">
       <button onclick="switchMainTab('siswa')" id="mobileNavSiswa" class="flex flex-col items-center gap-1 text-sky-400">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -1276,14 +1471,14 @@
         <span class="text-[10px] font-bold">Cari Siswa</span>
       </button>
 
-      <button onclick="switchMainTab('guru')" id="mobileNavGuru" class="flex flex-col items-center gap-1 text-slate-500">
+      <button onclick="switchMainTab('guru')" id="mobileNavGuru" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
         </svg>
         <span class="text-[10px] font-bold">Portal Guru</span>
       </button>
 
-      <button onclick="switchMainTab('admin')" id="mobileNavAdmin" class="flex flex-col items-center gap-1 text-slate-500">
+      <button onclick="switchMainTab('admin')" id="mobileNavAdmin" class="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
         </svg>
@@ -1292,98 +1487,76 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC & SIMULATION DATA -->
+  <!-- JAVASCRIPT LOGIC & SCRIPT WRAPPER -->
   <script>
-    // =========================================================================
-    // KONFIGURASI GOOGLE APPS SCRIPT (GAS) ENDPOINT
-    // =========================================================================
-    // Masukkan Web App URL dari Deployment Google Apps Script (Code.gs) Anda di bawah ini:
-    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbykNK7zAyVgMhfLhgmHXa-DMumN6yIb9v7N9g3q7g_3o6A4E-n_7ewd3jP6t-bEQXCc/exec";
+    // Konfigurasi Endpoint Google Apps Script Web App
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbzh_waXuDLIH4qfy_KqJFEzqi5ssFArpoBG6vrlEhSCN7ntvvqGx8nVNgJYs4LewKKn/exec";
 
-    /**
-     * Helper pemanggil API backend Google Apps Script.
-     * Menggunakan redirect: 'follow' dan Content-Type: 'text/plain' sesuai standar CORS GAS.
-     */
-    async function fetchFromGAS(action, params = {}, method = 'GET') {
+    // Jembatan Fetch API ke Google Apps Script (Mendukung Redirect Follow & Anti-CORS)
+    async function fetchFromGAS(action, payload = {}, method = 'GET') {
       if (!GAS_ENDPOINT_URL || GAS_ENDPOINT_URL.includes('AKfycbx_GDRIVE_PORTAL_ENDPOINT_HERE')) {
-        return null; // Gunakan database simulasi lokal jika URL deployment belum disematkan
+        return null; // Fallback otomatis ke penyimpanan lokal
       }
 
       try {
-        if (method === 'GET') {
-          const queryString = new URLSearchParams({ action, ...params }).toString();
-          const response = await fetch(`${GAS_ENDPOINT_URL}?${queryString}`, {
-            method: 'GET',
-            redirect: 'follow'
-          });
-          return await response.json();
+        let url = `${GAS_ENDPOINT_URL}?action=${encodeURIComponent(action)}`;
+        let options = {
+          method: method,
+          redirect: 'follow'
+        };
+
+        if (method === 'POST') {
+          options.headers = { 'Content-Type': 'text/plain;charset=utf-8' };
+          options.body = JSON.stringify({ action, ...payload });
         } else {
-          const response = await fetch(GAS_ENDPOINT_URL, {
-            method: 'POST',
-            redirect: 'follow',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action, ...params })
-          });
-          return await response.json();
+          for (const key in payload) {
+            url += `&${encodeURIComponent(key)}=${encodeURIComponent(payload[key])}`;
+          }
         }
-      } catch (error) {
-        console.warn("GAS API Connection:", error);
-        return null; // Fallback ke mode lokal/simulasi jika koneksi gagal
+
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+        return await response.json();
+      } catch (err) {
+        console.warn('GAS Gateway Notice:', err.message);
+        return null;
       }
     }
 
-    /* Helper: Generate SVG data URI for placeholder scans & photos */
     function createDocSvgDataUri(title, nisn, docType, bgGradient) {
-      const isFoto = docType.toLowerCase().includes('foto');
-      const height = isFoto ? 600 : 550;
-      const width = isFoto ? 450 : 800;
-
-      let innerGraphics = '';
-      if (isFoto) {
-        innerGraphics = `
-          <circle cx="225" cy="230" r="85" fill="#38bdf8" fill-opacity="0.25" stroke="#38bdf8" stroke-width="3" />
-          <circle cx="225" cy="205" r="45" fill="#ffffff" fill-opacity="0.8" />
-          <path d="M165 300 C 165 250, 285 250, 285 300 Z" fill="#ffffff" fill-opacity="0.8" />
-          <text x="225" y="370" fill="#ffffff" font-family="sans-serif" font-size="18" font-weight="bold" text-anchor="middle">PAS FOTO RESMI SISWA</text>
-          <text x="225" y="400" fill="#93c5fd" font-family="monospace" font-size="14" text-anchor="middle">NISN: ${nisn}</text>
-          <text x="225" y="430" fill="#e2e8f0" font-family="sans-serif" font-size="13" text-anchor="middle">${title}</text>
-        `;
-      } else {
-        innerGraphics = `
-          <rect x="24" y="24" width="752" height="502" fill="none" stroke="#ffffff" stroke-opacity="0.2" stroke-width="2" rx="10"/>
-          <text x="400" y="80" fill="#ffffff" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" letter-spacing="2">KEMENTERIAN PENDIDIKAN DAN KEBUDAYAAN</text>
-          <text x="400" y="110" fill="#93c5fd" font-family="sans-serif" font-size="13" font-weight="600" text-anchor="middle">ARSIP DOKUMEN DIGITAL RESMI</text>
-          <line x1="100" y1="130" x2="700" y2="130" stroke="#ffffff" stroke-opacity="0.25" stroke-width="1.5" />
-          
-          <rect x="200" y="155" width="400" height="40" fill="#0284c7" rx="8" fill-opacity="0.8"/>
-          <text x="400" y="181" fill="#ffffff" font-family="sans-serif" font-size="15" font-weight="bold" text-anchor="middle">${docType.toUpperCase()}</text>
-          
-          <text x="120" y="240" fill="#e2e8f0" font-family="sans-serif" font-size="15" font-weight="bold">Nama Siswa</text>
-          <text x="260" y="240" fill="#ffffff" font-family="sans-serif" font-size="15">: ${title}</text>
-          <text x="120" y="280" fill="#e2e8f0" font-family="sans-serif" font-size="15" font-weight="bold">NISN</text>
-          <text x="260" y="280" fill="#38bdf8" font-family="monospace" font-size="16" font-weight="bold">: ${nisn}</text>
-          <text x="120" y="320" fill="#e2e8f0" font-family="sans-serif" font-size="15" font-weight="bold">Status Berkas</text>
-          <text x="260" y="320" fill="#4ade80" font-family="sans-serif" font-size="15" font-weight="bold">: Tervalidasi & Sinkron Google Drive</text>
-          <circle cx="650" cy="400" r="50" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
-          <text x="650" y="395" fill="#38bdf8" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="middle">VERIFIED</text>
-          <text x="650" y="415" fill="#38bdf8" font-family="sans-serif" font-size="9" text-anchor="middle">G-DRIVE CLOUD</text>
-        `;
-      }
-
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="550" viewBox="0 0 800 550">
         <defs>
           <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="${bgGradient[0]}" />
             <stop offset="100%" stop-color="${bgGradient[1]}" />
           </linearGradient>
+          <pattern id="pattern" width="20" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1" fill="#ffffff" fill-opacity="0.05"/>
+          </pattern>
         </defs>
-        <rect width="${width}" height="${height}" fill="url(#grad)" rx="16"/>
-        ${innerGraphics}
+        <rect width="800" height="550" fill="url(#grad)" rx="16"/>
+        <rect width="800" height="550" fill="url(#pattern)" rx="16"/>
+        <rect x="24" y="24" width="752" height="502" fill="none" stroke="#ffffff" stroke-opacity="0.2" stroke-width="2" rx="8"/>
+        <text x="400" y="80" fill="#ffffff" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" letter-spacing="3">KEMENTERIAN PENDIDIKAN DAN KEBUDAYAAN</text>
+        <text x="400" y="110" fill="#93c5fd" font-family="sans-serif" font-size="14" font-weight="600" text-anchor="middle">ARSIP DOKUMEN RESMI TERCATAT</text>
+        <line x1="100" y1="130" x2="700" y2="130" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.5" />
+        <rect x="200" y="155" width="400" height="40" fill="#0284c7" rx="6" fill-opacity="0.8"/>
+        <text x="400" y="181" fill="#ffffff" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle">${docType.toUpperCase()}</text>
+        <text x="120" y="240" fill="#e2e8f0" font-family="sans-serif" font-size="15" font-weight="bold">Nama Siswa</text>
+        <text x="260" y="240" fill="#ffffff" font-family="sans-serif" font-size="15">: ${title}</text>
+        <text x="120" y="280" fill="#e2e8f0" font-family="sans-serif" font-size="15" font-weight="bold">NISN</text>
+        <text x="260" y="280" fill="#38bdf8" font-family="monospace" font-size="16" font-weight="bold">: ${nisn}</text>
+        <text x="120" y="320" fill="#e2e8f0" font-family="sans-serif" font-size="15" font-weight="bold">Status Berkas</text>
+        <text x="260" y="320" fill="#4ade80" font-family="sans-serif" font-size="15" font-weight="bold">: Tervalidasi Google Drive Mirror</text>
+        <circle cx="650" cy="400" r="55" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
+        <text x="650" y="395" fill="#38bdf8" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="middle">VERIFIED</text>
+        <text x="650" y="415" fill="#38bdf8" font-family="sans-serif" font-size="9" text-anchor="middle">CLOUD ARCHIVE</text>
+        <rect x="24" y="470" width="752" height="56" fill="#0f172a" fill-opacity="0.8" rx="0 0 8 8"/>
+        <text x="50" y="504" fill="#94a3b8" font-family="sans-serif" font-size="11">Dokumen digital ini tersinkronisasi langsung dengan pangkalan Google Drive resmi sekolah.</text>
       </svg>`;
       return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
 
-    /* Database Mock Simulation with updated XII FL classes */
     let mockDatabase = [
       {
         id: "DOC-2026-001",
@@ -1392,9 +1565,9 @@
         kelas: "XII FL 1",
         jenis_dokumen: "Foto",
         file_id: "1A2B3C4D_FOTO_001",
-        file_url: createDocSvgDataUri("Ahmad Pratama", "0081234567", "Foto", ["#032b43", "#134074"]),
-        file_name: "pasfoto_0081234567.jpg",
-        uploaded_at: "2026-05-19T08:00:00Z",
+        file_url: createDocSvgDataUri("Ahmad Pratama", "0081234567", "Foto Profil 3x4", ["#0f172a", "#1e293b"]),
+        file_name: "foto_0081234567.jpg",
+        uploaded_at: "2026-05-20T08:30:00Z",
         uploaded_by: "admin_tu"
       },
       {
@@ -1406,19 +1579,19 @@
         file_id: "1A2B3C4D_IJAZAH_002",
         file_url: createDocSvgDataUri("Ahmad Pratama", "0081234567", "Ijazah Kelulusan", ["#0f172a", "#1e293b"]),
         file_name: "ijazah_0081234567.jpg",
-        uploaded_at: "2026-05-20T08:30:00Z",
+        uploaded_at: "2026-05-20T08:45:00Z",
         uploaded_by: "admin_tu"
       },
       {
         id: "DOC-2026-003",
-        nisn: "0081234567",
-        nama_siswa: "Ahmad Pratama",
-        kelas: "XII FL 1",
-        jenis_dokumen: "Rapor Semester",
-        file_id: "1A2B3C4D_RAPOR_003",
-        file_url: createDocSvgDataUri("Ahmad Pratama", "0081234567", "Rapor Semester 6", ["#091e3a", "#1b3a4b"]),
-        file_name: "rapor_sem6_0081234567.jpg",
-        uploaded_at: "2026-05-21T09:15:00Z",
+        nisn: "0082345678",
+        nama_siswa: "Siti Nurhaliza",
+        kelas: "XII FL 2",
+        jenis_dokumen: "Foto",
+        file_id: "2B3C4D5E_FOTO_003",
+        file_url: createDocSvgDataUri("Siti Nurhaliza", "0082345678", "Foto Profil 3x4", ["#0f172a", "#1e293b"]),
+        file_name: "foto_0082345678.jpg",
+        uploaded_at: "2026-05-21T09:00:00Z",
         uploaded_by: "admin_tu"
       },
       {
@@ -1426,84 +1599,32 @@
         nisn: "0082345678",
         nama_siswa: "Siti Nurhaliza",
         kelas: "XII FL 2",
-        jenis_dokumen: "Foto",
-        file_id: "2B3C4D5E_FOTO_004",
-        file_url: createDocSvgDataUri("Siti Nurhaliza", "0082345678", "Foto", ["#3d0c2d", "#641249"]),
-        file_name: "pasfoto_0082345678.jpg",
-        uploaded_at: "2026-05-19T09:00:00Z",
+        jenis_dokumen: "Ijazah",
+        file_id: "2B3C4D5E_IJAZAH_004",
+        file_url: createDocSvgDataUri("Siti Nurhaliza", "0082345678", "Ijazah Kelulusan", ["#1e1b4b", "#312e81"]),
+        file_name: "ijazah_0082345678.jpg",
+        uploaded_at: "2026-05-21T09:15:00Z",
         uploaded_by: "admin_tu"
       },
       {
         id: "DOC-2026-005",
-        nisn: "0082345678",
-        nama_siswa: "Siti Nurhaliza",
-        kelas: "XII FL 2",
-        jenis_dokumen: "Ijazah",
-        file_id: "2B3C4D5E_IJAZAH_005",
-        file_url: createDocSvgDataUri("Siti Nurhaliza", "0082345678", "Ijazah Kelulusan", ["#0f172a", "#1e293b"]),
-        file_name: "ijazah_0082345678.jpg",
-        uploaded_at: "2026-05-20T09:00:00Z",
-        uploaded_by: "admin_tu"
-      },
-      {
-        id: "DOC-2026-006",
         nisn: "0083456789",
         nama_siswa: "Rian Hidayat",
         kelas: "XII FL 3",
-        jenis_dokumen: "Ijazah",
-        file_id: "3C4D5E6F_IJAZAH_006",
-        file_url: createDocSvgDataUri("Rian Hidayat", "0083456789", "Ijazah Kelulusan", ["#0f172a", "#1e293b"]),
-        file_name: "ijazah_0083456789.jpg",
-        uploaded_at: "2026-05-20T10:00:00Z",
-        uploaded_by: "admin_tu"
-      },
-      {
-        id: "DOC-2026-007",
-        nisn: "0084567890",
-        nama_siswa: "Dewi Lestari",
-        kelas: "XII FL 4",
-        jenis_dokumen: "Ijazah",
-        file_id: "4D5E6F7G_IJAZAH_007",
-        file_url: createDocSvgDataUri("Dewi Lestari", "0084567890", "Ijazah Kelulusan", ["#064e3b", "#047857"]),
-        file_name: "ijazah_0084567890.jpg",
-        uploaded_at: "2026-05-22T08:00:00Z",
-        uploaded_by: "admin_tu"
-      },
-      {
-        id: "DOC-2026-008",
-        nisn: "0085678901",
-        nama_siswa: "Budi Santoso",
-        kelas: "XII FL 5",
         jenis_dokumen: "Foto",
-        file_id: "5E6F7G8H_FOTO_008",
-        file_url: createDocSvgDataUri("Budi Santoso", "0085678901", "Foto", ["#312e81", "#4338ca"]),
-        file_name: "pasfoto_0085678901.jpg",
-        uploaded_at: "2026-05-22T09:00:00Z",
+        file_id: "3C4D5E6F_FOTO_005",
+        file_url: createDocSvgDataUri("Rian Hidayat", "0083456789", "Foto Profil 3x4", ["#0f172a", "#1e293b"]),
+        file_name: "foto_0083456789.jpg",
+        uploaded_at: "2026-05-22T10:00:00Z",
         uploaded_by: "admin_tu"
       }
     ];
 
-    /* Student Verification Audit Log */
     let studentVerificationStatus = {
-      "0081234567": {
+      "0082345678": {
         status: "BENAR",
-        timestamp: "2026-09-01T10:14:00Z",
+        timestamp: "2026-05-21T10:00:00Z",
         reasonNote: ""
-      },
-      "0083456789": {
-        status: "SALAH",
-        timestamp: "2026-09-02T11:20:00Z",
-        reasonNote: "Nama ayah pada ijazah terpotong satu huruf."
-      }
-    };
-
-    /* Teacher Validation State (Konfirmasi Guru per Anak) */
-    let teacherConfirmationStatus = {
-      "0081234567": {
-        status: "BENAR",
-        timestamp: "2026-09-02T08:00:00Z",
-        teacherName: "Wali Kelas XII FL 1",
-        note: ""
       }
     };
 
@@ -1513,21 +1634,19 @@
     let isGuruLoggedIn = false;
     let currentCompressedBase64 = "";
     let itemToDeleteId = null;
-    let pendingGuruRejectTarget = null;
+    let guruRejectTargetNISN = null;
+    let parsedBulkRows = [];
 
     let currentPage = 1;
     const itemsPerPage = 5;
     let filteredMasterData = [...mockDatabase];
 
-    /* Toast Notifications */
     let lastToastMessage = "";
     let lastToastTime = 0;
 
     function showToast(message, type = 'info') {
       const now = Date.now();
-      if (message === lastToastMessage && (now - lastToastTime) < 1500) {
-        return;
-      }
+      if (message === lastToastMessage && (now - lastToastTime) < 1500) return;
       lastToastMessage = message;
       lastToastTime = now;
 
@@ -1541,148 +1660,90 @@
         warning: 'bg-amber-950/90 border-amber-500/50 text-amber-200'
       };
 
-      toast.className = `pointer-events-auto flex items-center justify-between gap-3 p-3.5 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 text-xs ${typeStyles[type] || typeStyles.info}`;
-      
+      toast.className = `pointer-events-auto flex items-center justify-between gap-3 p-3.5 rounded-2xl border backdrop-blur-md shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 text-xs ${typeStyles[type] || typeStyles.info}`;
       toast.innerHTML = `
         <div class="flex items-center gap-2">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span class="font-medium leading-tight">${message}</span>
+          <span class="font-bold">${message}</span>
         </div>
-        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white p-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       `;
 
       container.appendChild(toast);
-      
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      });
-
+      requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
       setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-x-full');
         setTimeout(() => toast.remove(), 300);
       }, 4000);
     }
 
-    /* Main Navigation Tab Switching (Siswa, Guru, Admin) */
     function switchMainTab(tab) {
       const secSiswa = document.getElementById('sectionSiswa');
       const secGuru = document.getElementById('sectionGuru');
       const secAdmin = document.getElementById('sectionAdmin');
-      
+
       const navBtnSiswa = document.getElementById('navBtnSiswa');
       const navBtnGuru = document.getElementById('navBtnGuru');
       const navBtnAdmin = document.getElementById('navBtnAdmin');
+
       const mobileNavSiswa = document.getElementById('mobileNavSiswa');
       const mobileNavGuru = document.getElementById('mobileNavGuru');
       const mobileNavAdmin = document.getElementById('mobileNavAdmin');
 
-      // Reset all sections
-      secSiswa.classList.add('hidden');
-      secGuru.classList.add('hidden');
-      secAdmin.classList.add('hidden');
+      [secSiswa, secGuru, secAdmin].forEach(s => s.classList.add('hidden'));
 
-      // Default inactive styles
+      const activeClass = "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md shadow-sky-600/30 flex items-center gap-1.5";
       const inactiveClass = "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white flex items-center gap-1.5";
+
       navBtnSiswa.className = inactiveClass;
       navBtnGuru.className = inactiveClass;
       navBtnAdmin.className = inactiveClass;
 
-      mobileNavSiswa.className = "flex flex-col items-center gap-1 text-slate-500";
-      mobileNavGuru.className = "flex flex-col items-center gap-1 text-slate-500";
-      mobileNavAdmin.className = "flex flex-col items-center gap-1 text-slate-500";
+      mobileNavSiswa.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300";
+      mobileNavGuru.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300";
+      mobileNavAdmin.className = "flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300";
 
       if (tab === 'siswa') {
         secSiswa.classList.remove('hidden');
-        navBtnSiswa.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md shadow-sky-600/30 flex items-center gap-1.5";
+        navBtnSiswa.className = activeClass;
         mobileNavSiswa.className = "flex flex-col items-center gap-1 text-sky-400";
       } else if (tab === 'guru') {
         secGuru.classList.remove('hidden');
-        navBtnGuru.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30 flex items-center gap-1.5";
-        mobileNavGuru.className = "flex flex-col items-center gap-1 text-indigo-400";
+        navBtnGuru.className = activeClass;
+        mobileNavGuru.className = "flex flex-col items-center gap-1 text-sky-400";
         renderGuruState();
       } else {
         secAdmin.classList.remove('hidden');
-        navBtnAdmin.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md shadow-sky-600/30 flex items-center gap-1.5";
+        navBtnAdmin.className = activeClass;
         mobileNavAdmin.className = "flex flex-col items-center gap-1 text-sky-400";
         renderAdminState();
       }
     }
 
-    /* Guru Authentication Handlers */
-    async function handleGuruLogin(event) {
-      event.preventDefault();
-      const u = document.getElementById('guruUsername').value.trim();
-      const p = document.getElementById('guruPassword').value.trim();
-
-      // Coba otentikasi ke Google Apps Script terlebih dahulu
-      const remoteRes = await fetchFromGAS('login', { username: u, password: p, expectedRole: 'GURU' }, 'POST');
-      if (remoteRes && remoteRes.status === 'success') {
-        isGuruLoggedIn = true;
-        showToast('Login Guru berhasil via Google Cloud!', 'success');
-        renderGuruState();
-        return;
-      }
-
-      if (u === 'guru' && p === '123456') {
-        isGuruLoggedIn = true;
-        showToast('Login Guru berhasil. Selamat datang!', 'success');
-        renderGuruState();
-      } else {
-        showToast('Username atau PIN Guru salah!', 'error');
-      }
-    }
-
-    function handleGuruLogout() {
-      isGuruLoggedIn = false;
-      showToast('Sesi Guru telah berakhir.', 'info');
-      renderGuruState();
-    }
-
-    function renderGuruState() {
-      const loginForm = document.getElementById('guruLoginForm');
-      const dashboard = document.getElementById('guruDashboardPanel');
-
-      if (isGuruLoggedIn) {
-        loginForm.classList.add('hidden');
-        dashboard.classList.remove('hidden');
-        renderGuruPortal();
-      } else {
-        loginForm.classList.remove('hidden');
-        dashboard.classList.add('hidden');
-      }
-    }
-
-    /* Guru Sub Tab Switching (Arsip vs Konfirmasi Per Anak) */
-    function switchGuruSubTab(tab) {
-      renderGuruPortal();
-    }
-
-    /* Admin Sub Tab Switching */
     function switchAdminSubTab(subTab) {
-      const tabArsip = document.getElementById('subTabContentArsip');
-      const tabHasil = document.getElementById('subTabContentHasil');
+      const subArsip = document.getElementById('subTabContentArsip');
+      const subHasil = document.getElementById('subTabContentHasil');
       const btnArsip = document.getElementById('subTabBtnArsip');
       const btnHasil = document.getElementById('subTabBtnHasil');
 
       if (subTab === 'arsip') {
-        tabArsip.classList.remove('hidden');
-        tabHasil.classList.add('hidden');
+        subArsip.classList.remove('hidden');
+        subHasil.classList.add('hidden');
         btnArsip.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-sky-600 text-white shadow-md shadow-sky-600/20 flex items-center gap-2";
         btnHasil.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white hover:bg-slate-900 flex items-center gap-2 relative";
       } else {
-        tabArsip.classList.add('hidden');
-        tabHasil.classList.remove('hidden');
+        subArsip.classList.add('hidden');
+        subHasil.classList.remove('hidden');
         btnHasil.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-sky-600 text-white shadow-md shadow-sky-600/20 flex items-center gap-2 relative";
         btnArsip.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white hover:bg-slate-900 flex items-center gap-2";
         renderHasilTable();
       }
     }
 
-    /* NISN Search Handlers */
     function handleNISNInput(input) {
       input.value = input.value.replace(/[^0-9]/g, '');
       const btnClear = document.getElementById('btnClearNISN');
@@ -1710,8 +1771,8 @@
       if (event) event.preventDefault();
       const nisn = document.getElementById('inputNISN').value.trim();
 
-      if (nisn.length < 10) {
-        showToast('NISN harus terdiri dari 10 digit angka!', 'warning');
+      if (nisn.length < 8) {
+        showToast('Masukkan minimal 8 hingga 10 digit NISN!', 'warning');
         return;
       }
 
@@ -1719,40 +1780,47 @@
       document.getElementById('emptySearchState').classList.add('hidden');
       document.getElementById('skeletonLoading').classList.remove('hidden');
 
-      // Coba fetch dari Google Apps Script secara real-time
-      const remoteRes = await fetchFromGAS('searchNISN', { nisn }, 'GET');
+      // Ambil dari Google Apps Script jika terhubung
+      const gasResponse = await fetchFromGAS('searchNISN', { nisn });
 
       setTimeout(() => {
         document.getElementById('skeletonLoading').classList.add('hidden');
-
-        if (remoteRes && remoteRes.status === 'success' && remoteRes.data && remoteRes.data.student) {
-          // Sinkronkan hasil remote ke antarmuka
-          currentStudentResults = remoteRes.data.documents || [];
-          currentActiveStudent = remoteRes.data.student;
-
-          if (remoteRes.data.verification) {
-            studentVerificationStatus[nisn] = {
-              status: remoteRes.data.verification.status_siswa,
-              timestamp: remoteRes.data.verification.waktu_siswa,
-              reasonNote: remoteRes.data.verification.catatan_siswa
-            };
-          }
-
-          renderSearchResultsUI(currentActiveStudent, currentStudentResults);
+        if (gasResponse && gasResponse.status === 'success' && gasResponse.data.documents.length > 0) {
+          executeSearchQueryWithData(gasResponse.data.documents, gasResponse.data.student, gasResponse.data.verification);
         } else {
-          // Fallback ke data simulasi lokal
-          executeSearchQuery(nisn);
+          executeSearchQueryLocal(nisn);
         }
-      }, 350);
+      }, 400);
     }
 
-    function renderSearchResultsUI(student, results) {
-      document.getElementById('resNamaSiswa').textContent = student.nama_siswa;
-      document.getElementById('resNISN').textContent = student.nisn;
-      document.getElementById('resKelas').textContent = student.kelas;
+    function executeSearchQueryLocal(nisn) {
+      const results = mockDatabase.filter(item => item.nisn === nisn);
+      if (results.length === 0) {
+        document.getElementById('emptySearchState').classList.remove('hidden');
+        showToast('Data berkas untuk NISN ' + nisn + ' tidak ditemukan.', 'info');
+        return;
+      }
+      executeSearchQueryWithData(results, results[0], studentVerificationStatus[nisn]);
+    }
+
+    function executeSearchQueryWithData(results, studentProfile, verificationData) {
+      currentStudentResults = results;
+      currentActiveStudent = studentProfile || results[0];
+
+      document.getElementById('resNamaSiswa').textContent = currentActiveStudent.nama_siswa;
+      document.getElementById('resNISN').textContent = currentActiveStudent.nisn;
+      document.getElementById('resKelas').textContent = currentActiveStudent.kelas;
       document.getElementById('resTotalBerkas').textContent = results.length + " Dokumen";
 
-      renderStudentConfirmationBox(student.nisn);
+      if (verificationData && !studentVerificationStatus[currentActiveStudent.nisn]) {
+        studentVerificationStatus[currentActiveStudent.nisn] = {
+          status: verificationData.status_siswa,
+          timestamp: verificationData.waktu_siswa,
+          reasonNote: verificationData.catatan_siswa
+        };
+      }
+
+      renderStudentConfirmationState();
 
       const gallery = document.getElementById('documentGalleryGrid');
       gallery.innerHTML = '';
@@ -1760,52 +1828,33 @@
       results.forEach(doc => {
         const card = document.createElement('div');
         card.className = "group relative glass-panel hover:border-sky-500/50 rounded-3xl overflow-hidden shadow-xl transition-all duration-300 hover:shadow-sky-500/10 flex flex-col justify-between";
-        
         card.innerHTML = `
           <div class="relative overflow-hidden aspect-[4/3] bg-slate-950 cursor-pointer" onclick="openImageModal('${doc.id}')">
-            <img 
-              src="${doc.file_url}" 
-              alt="${doc.jenis_dokumen}" 
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-85"></div>
-            
+            <img src="${doc.file_url}" alt="${doc.jenis_dokumen}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
             <div class="absolute top-3 left-3">
-              <span class="px-3 py-1 bg-slate-900/90 backdrop-blur-md text-sky-300 border border-sky-500/30 rounded-xl text-[11px] font-bold tracking-wide">
+              <span class="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md text-sky-400 border border-sky-500/30 rounded-xl text-[11px] font-bold tracking-wide">
                 ${doc.jenis_dokumen}
               </span>
             </div>
-
             <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/40 backdrop-blur-[2px]">
-              <span class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xl">
+              <span class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                Buka Berkas
+                Perbesar Berkas
               </span>
             </div>
           </div>
-
           <div class="p-4 space-y-3">
             <div class="flex items-center justify-between text-xs text-slate-400">
               <span class="truncate font-mono font-medium">${doc.file_name}</span>
-              <span class="text-[11px] text-slate-500 shrink-0">${new Date(doc.uploaded_at).toLocaleDateString('id-ID')}</span>
+              <span class="text-[10px] text-slate-500 shrink-0">${new Date(doc.uploaded_at).toLocaleDateString('id-ID')}</span>
             </div>
-
-            <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
-              <button 
-                type="button" 
-                onclick="openImageModal('${doc.id}')"
-                class="flex-1 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
-              >
+            <div class="flex items-center gap-2 pt-1 border-t border-slate-800/80">
+              <button type="button" onclick="openImageModal('${doc.id}')" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1 border border-slate-800">
                 <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 Pratinjau
               </button>
-              <a 
-                href="${doc.file_url}" 
-                download="${doc.file_name}"
-                target="_blank"
-                class="px-3.5 py-2 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 text-xs font-bold rounded-xl transition-all flex items-center gap-1"
-                title="Unduh Salinan Asli"
-              >
+              <a href="${doc.file_url}" download="${doc.file_name}" target="_blank" class="px-3.5 py-2 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 text-xs font-semibold rounded-xl transition-all flex items-center gap-1" title="Unduh Salinan Asli">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Unduh
               </a>
@@ -1816,97 +1865,91 @@
       });
 
       document.getElementById('resultsContainer').classList.remove('hidden');
-      showToast(`Ditemukan ${results.length} berkas arsip untuk ${student.nama_siswa}.`, 'success');
+      showToast(`Ditemukan ${results.length} berkas arsip untuk ${currentActiveStudent.nama_siswa}.`, 'success');
     }
 
-    function executeSearchQuery(nisn) {
-      const results = mockDatabase.filter(item => item.nisn === nisn);
-      
-      if (results.length === 0) {
-        document.getElementById('emptySearchState').classList.remove('hidden');
-        showToast('Data berkas untuk NISN ' + nisn + ' tidak ditemukan.', 'info');
-        return;
-      }
+    function renderStudentConfirmationState() {
+      if (!currentActiveStudent) return;
+      const nisn = currentActiveStudent.nisn;
+      const record = studentVerificationStatus[nisn];
 
-      currentStudentResults = results;
-      currentActiveStudent = results[0];
-
-      renderSearchResultsUI(currentActiveStudent, currentStudentResults);
-    }
-
-    function renderStudentConfirmationBox(nisn) {
-      const conf = studentVerificationStatus[nisn];
-      const actionButtons = document.getElementById('confirmActionButtons');
+      const btnGroup = document.getElementById('confirmActionButtons');
       const wrongForm = document.getElementById('wrongDataForm');
       const lockedNotice = document.getElementById('lockedStateNotice');
       const statusBadge = document.getElementById('confirmStatusBadge');
-      const lockTime = document.getElementById('lockTimestampText');
-      const reasonNote = document.getElementById('lockedReasonNote');
-      const cardContainer = document.getElementById('confirmationCard');
+      const timestampText = document.getElementById('lockTimestampText');
+      const confirmationCard = document.getElementById('confirmationCard');
 
       wrongForm.classList.add('hidden');
 
-      if (!conf) {
-        actionButtons.classList.remove('hidden');
+      if (!record) {
+        btnGroup.classList.remove('hidden');
         lockedNotice.classList.add('hidden');
-        lockTime.textContent = '';
+        timestampText.textContent = '';
         statusBadge.textContent = 'Belum Dikonfirmasi';
         statusBadge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700';
-        cardContainer.className = 'glass-panel rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden transition-all duration-300 border-sky-500/20';
+        confirmationCard.className = 'glass-panel rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden transition-all duration-300 border-sky-500/20';
         return;
       }
 
-      actionButtons.classList.add('hidden');
+      btnGroup.classList.add('hidden');
       lockedNotice.classList.remove('hidden');
 
-      const dateStr = new Date(conf.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-      lockTime.textContent = `Terkunci: ${dateStr}`;
+      const dateStr = new Date(record.timestamp).toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+      timestampText.textContent = `Terkunci: ${dateStr}`;
 
-      if (conf.status === 'BENAR') {
-        statusBadge.textContent = 'Data Terkunci: Sesuai';
+      const iconContainer = document.getElementById('lockedIconContainer');
+      const heading = document.getElementById('lockedHeading');
+      const desc = document.getElementById('lockedDescription');
+      const reasonNote = document.getElementById('lockedReasonNote');
+
+      if (record.status === 'BENAR') {
+        confirmationCard.className = 'glass-panel rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden transition-all duration-300 border-emerald-500/30 bg-emerald-950/20';
+        statusBadge.textContent = 'Data Sesuai (Terkunci)';
         statusBadge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
-        cardContainer.className = 'glass-panel rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden transition-all duration-300 border-emerald-500/40';
-
-        lockedNotice.className = 'mt-4 p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-xs flex items-start gap-3';
-        document.getElementById('lockedIconContainer').className = 'p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0 mt-0.5';
-        document.getElementById('lockedIconContainer').innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`;
-        document.getElementById('lockedHeading').className = 'font-bold text-sm text-emerald-300';
-        document.getElementById('lockedHeading').textContent = 'Data Berkas Telah Dikonfirmasi & Terkunci';
-        document.getElementById('lockedDescription').textContent = `Anda telah mengonfirmasi bahwa data identitas serta berkas arsip Anda sudah benar dan sah pada ${dateStr}. Perubahan data kini hanya dapat diproses oleh petugas Tata Usaha sekolah.`;
+        lockedNotice.className = 'mt-4 p-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/30 text-xs flex items-start gap-3 text-emerald-200';
+        iconContainer.className = 'p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0 mt-0.5';
+        iconContainer.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+        heading.textContent = 'Data & Berkas Telah Terverifikasi Benar';
+        heading.className = 'font-bold text-sm text-emerald-300';
+        desc.textContent = 'Anda telah mengonfirmasi bahwa data identitas dan seluruh berkas Google Drive di bawah ini sudah sesuai. Data telah dikunci secara permanen.';
         reasonNote.classList.add('hidden');
-      } else if (conf.status === 'SALAH') {
-        statusBadge.textContent = 'Data Terkunci: Laporan Sanggahan';
+      } else if (record.status === 'SALAH') {
+        confirmationCard.className = 'glass-panel rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden transition-all duration-300 border-rose-500/30 bg-rose-950/20';
+        statusBadge.textContent = 'Laporan Salah (Terkunci)';
         statusBadge.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40';
-        cardContainer.className = 'glass-panel rounded-3xl p-6 sm:p-7 shadow-2xl relative overflow-hidden transition-all duration-300 border-rose-500/40';
-
-        lockedNotice.className = 'mt-4 p-4 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-xs flex items-start gap-3';
-        document.getElementById('lockedIconContainer').className = 'p-2 rounded-xl bg-rose-500/20 text-rose-400 shrink-0 mt-0.5';
-        document.getElementById('lockedIconContainer').innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
-        document.getElementById('lockedHeading').className = 'font-bold text-sm text-rose-300';
-        document.getElementById('lockedHeading').textContent = 'Laporan Ketidaksesuaian Berkas Terkirim & Terkunci';
-        document.getElementById('lockedDescription').textContent = `Anda telah melaporkan adanya ketidaksesuaian berkas pada ${dateStr}. Catatan Anda telah diteruskan ke dasbor petugas TU untuk segera diverifikasi dan diperbaiki.`;
-        
-        reasonNote.classList.remove('hidden');
-        reasonNote.textContent = `Catatan Anda: "${conf.reasonNote || 'Tidak ada rincian tambahan'}"`;
+        lockedNotice.className = 'mt-4 p-4 rounded-2xl border border-rose-500/30 bg-rose-950/30 text-xs flex items-start gap-3 text-rose-200';
+        iconContainer.className = 'p-2 rounded-xl bg-rose-500/20 text-rose-400 shrink-0 mt-0.5';
+        iconContainer.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+        heading.textContent = 'Laporan Ketidaksesuaian Berkas Terkirim';
+        heading.className = 'font-bold text-sm text-rose-300';
+        desc.textContent = 'Laporan ketidaksesuaian berkas Anda telah berhasil disimpan dan diteruskan ke Guru & Staf Tata Usaha untuk dilakukan perbaikan.';
+        if (record.reasonNote) {
+          reasonNote.textContent = `Catatan Koreksi Anda: "${record.reasonNote}"`;
+          reasonNote.classList.remove('hidden');
+        } else {
+          reasonNote.classList.add('hidden');
+        }
       }
     }
 
-    async function handleStudentConfirmation(status) {
+    async function handleStudentConfirmation(statusChoice) {
       if (!currentActiveStudent) return;
       const nisn = currentActiveStudent.nisn;
-
-      // Coba kirim konfirmasi ke Google Apps Script
-      fetchFromGAS('studentConfirm', { nisn, status, note: '' }, 'POST');
+      const nowIso = new Date().toISOString();
 
       studentVerificationStatus[nisn] = {
-        status: status,
-        timestamp: new Date().toISOString(),
+        status: statusChoice,
+        timestamp: nowIso,
         reasonNote: ""
       };
 
-      renderStudentConfirmationBox(nisn);
+      await fetchFromGAS('studentConfirm', { nisn, status: statusChoice, note: "" }, 'POST');
+      renderStudentConfirmationState();
       updateHasilBadgeCounter();
-      showToast('Terima kasih! Status berkas Anda berhasil dikonfirmasi dan dikunci.', 'success');
+      showToast('Terima kasih! Verifikasi berkas Anda berhasil disimpan dan dikunci.', 'success');
     }
 
     function showWrongDataInput() {
@@ -1916,31 +1959,30 @@
 
     function hideWrongDataInput() {
       document.getElementById('wrongDataForm').classList.add('hidden');
+      document.getElementById('wrongReasonTextarea').value = '';
     }
 
     async function submitWrongDataConfirmation() {
+      if (!currentActiveStudent) return;
       const reason = document.getElementById('wrongReasonTextarea').value.trim();
       if (!reason) {
-        showToast('Mohon tuliskan penjelasan data yang tidak sesuai.', 'warning');
+        showToast('Mohon tuliskan penjelasan data yang tidak sesuai!', 'warning');
         return;
       }
 
-      if (!currentActiveStudent) return;
       const nisn = currentActiveStudent.nisn;
-
-      // Coba kirim laporan sanggahan ke Google Apps Script
-      fetchFromGAS('studentConfirm', { nisn, status: 'SALAH', note: reason }, 'POST');
+      const nowIso = new Date().toISOString();
 
       studentVerificationStatus[nisn] = {
-        status: "SALAH",
-        timestamp: new Date().toISOString(),
+        status: 'SALAH',
+        timestamp: nowIso,
         reasonNote: reason
       };
 
-      document.getElementById('wrongReasonTextarea').value = '';
-      renderStudentConfirmationBox(nisn);
+      await fetchFromGAS('studentConfirm', { nisn, status: 'SALAH', note: reason }, 'POST');
+      renderStudentConfirmationState();
       updateHasilBadgeCounter();
-      showToast('Laporan ketidaksesuaian berhasil dikirim ke Admin TU.', 'info');
+      showToast('Laporan ketidaksesuaian berhasil dikirim dan dikunci.', 'info');
     }
 
     function openImageModal(docId) {
@@ -1968,13 +2010,12 @@
       modal.classList.remove('flex');
     }
 
-    /* Client-side Canvas Image Compression */
     function handleFileSelection(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       if (!file.type.match('image.*')) {
-        showToast('Format file harus berupa gambar (JPG, PNG, WEBP)!', 'error');
+        showToast('Format berkas wajib berupa foto / scan gambar (JPG, PNG, WEBP)!', 'error');
         return;
       }
 
@@ -2016,7 +2057,6 @@
 
           document.getElementById('previewCompressedSize').textContent = `Terkonversi: ${compressedSizeKB} KB`;
           document.getElementById('imgPreviewCanvas').src = compressedDataUrl;
-          
           document.getElementById('dropzonePlaceholder').classList.add('hidden');
           document.getElementById('dropzonePreviewBox').classList.remove('hidden');
 
@@ -2027,211 +2067,211 @@
       reader.readAsDataURL(file);
     }
 
-    // =========================================================================
-    // PORTAL GURU LOGIC (FILTER KELAS, ARSIP DRIVE & KONFIRMASI PER ANAK)
-    // =========================================================================
+    function handleGuruLogin(event) {
+      event.preventDefault();
+      const u = document.getElementById('guruUsername').value.trim();
+      const p = document.getElementById('guruPassword').value.trim();
+
+      if (u === 'guru' && p === '123456') {
+        isGuruLoggedIn = true;
+        showToast('Login Portal Guru berhasil!', 'success');
+        renderGuruState();
+      } else {
+        showToast('Username atau password guru salah!', 'error');
+      }
+    }
+
+    function handleGuruLogout() {
+      isGuruLoggedIn = false;
+      showToast('Sesi Portal Guru berakhir.', 'info');
+      renderGuruState();
+    }
+
+    function renderGuruState() {
+      const loginForm = document.getElementById('guruLoginForm');
+      const dashboard = document.getElementById('guruDashboardPanel');
+
+      if (isGuruLoggedIn) {
+        loginForm.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+        updateGuruStats();
+        renderGuruMasterTable();
+      } else {
+        loginForm.classList.remove('hidden');
+        dashboard.classList.add('hidden');
+      }
+    }
+
+    function updateGuruStats() {
+      const kelasFilter = document.getElementById('guruFilterKelas').value;
+      const docs = mockDatabase.filter(d => kelasFilter === 'ALL' || d.kelas === kelasFilter);
+      const uniqueNisns = Array.from(new Set(docs.map(d => d.nisn)));
+
+      let benar = 0;
+      let salah = 0;
+
+      uniqueNisns.forEach(n => {
+        const c = studentVerificationStatus[n];
+        if (c) {
+          if (c.status === 'BENAR') benar++;
+          else if (c.status === 'SALAH') salah++;
+        }
+      });
+
+      document.getElementById('statGuruTotalSiswa').textContent = uniqueNisns.length;
+      document.getElementById('statGuruTotalDocs').textContent = docs.length;
+      document.getElementById('statGuruBenar').textContent = benar;
+      document.getElementById('statGuruPerluPerhatian').textContent = salah;
+    }
+
     function handleGuruFilterChange() {
-      renderGuruPortal();
+      updateGuruStats();
+      renderGuruMasterTable();
     }
 
-    function renderGuruPortal() {
-      const selectedKelas = document.getElementById('guruFilterKelas').value;
-      const selectedStatus = document.getElementById('guruFilterStatus').value;
-      const searchQuery = (document.getElementById('guruSearchQuery').value || '').toLowerCase().trim();
+    function renderGuruMasterTable() {
+      const kelasFilter = document.getElementById('guruFilterKelas').value;
+      const statusFilter = document.getElementById('guruFilterStatus').value;
+      const query = (document.getElementById('guruSearchQuery').value || '').toLowerCase().trim();
 
-      // Filter unique students based on class, status, and search query
-      const allUniqueStudents = getUniqueStudents();
-      const filteredStudents = allUniqueStudents.filter(st => {
-        if (selectedKelas !== 'ALL' && st.kelas !== selectedKelas) return false;
+      const filtered = mockDatabase.filter(d => {
+        if (kelasFilter !== 'ALL' && d.kelas !== kelasFilter) return false;
         
-        const conf = studentVerificationStatus[st.nisn];
-        const status = conf ? conf.status : 'PENDING';
-        if (selectedStatus !== 'ALL' && status !== selectedStatus) return false;
+        const conf = studentVerificationStatus[d.nisn];
+        const curStatus = conf ? conf.status : 'PENDING';
+        if (statusFilter !== 'ALL' && curStatus !== statusFilter) return false;
 
-        if (searchQuery) {
-          const matchQuery = st.nama_siswa.toLowerCase().includes(searchQuery) || st.nisn.includes(searchQuery);
-          if (!matchQuery) return false;
+        if (query) {
+          const match = d.nama_siswa.toLowerCase().includes(query) ||
+                        d.nisn.includes(query) ||
+                        d.jenis_dokumen.toLowerCase().includes(query);
+          if (!match) return false;
         }
+
         return true;
       });
 
-      // Filter documents based on class & search
-      const filteredDocs = mockDatabase.filter(doc => {
-        if (selectedKelas !== 'ALL' && doc.kelas !== selectedKelas) return false;
-        
-        const conf = studentVerificationStatus[doc.nisn];
-        const status = conf ? conf.status : 'PENDING';
-        if (selectedStatus !== 'ALL' && status !== selectedStatus) return false;
+      document.getElementById('guruArsipCountBadge').textContent = `${filtered.length} berkas ditampilkan`;
+      const tbody = document.getElementById('guruMasterTableBody');
+      tbody.innerHTML = '';
 
-        if (searchQuery) {
-          const matchQuery = doc.nama_siswa.toLowerCase().includes(searchQuery) || doc.nisn.includes(searchQuery) || doc.jenis_dokumen.toLowerCase().includes(searchQuery);
-          if (!matchQuery) return false;
-        }
-        return true;
-      });
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500">Tidak ada berkas yang sesuai dengan filter kelas/pencarian.</td></tr>`;
+        return;
+      }
 
-      // Calculate Stats
-      let benarCount = 0;
-      let perluPerhatianCount = 0;
+      filtered.forEach(item => {
+        const conf = studentVerificationStatus[item.nisn];
+        let responSiswaHtml = '';
 
-      filteredStudents.forEach(st => {
-        const conf = studentVerificationStatus[st.nisn];
-        if (conf && conf.status === 'BENAR') benarCount++;
-        if (!conf || conf.status === 'SALAH') perluPerhatianCount++;
-      });
-
-      document.getElementById('statGuruTotalSiswa').textContent = filteredStudents.length;
-      document.getElementById('statGuruTotalDocs').textContent = filteredDocs.length;
-      document.getElementById('statGuruBenar').textContent = benarCount;
-      document.getElementById('statGuruPerluPerhatian').textContent = perluPerhatianCount;
-
-      // Render Guru Unified Master Table
-      const tbodyDocs = document.getElementById('guruMasterTableBody');
-      tbodyDocs.innerHTML = '';
-      document.getElementById('guruArsipCountBadge').textContent = `${filteredDocs.length} berkas ditemukan`;
-
-      if (filteredDocs.length === 0) {
-        tbodyDocs.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 font-medium">Tidak ada berkas yang sesuai dengan kriteria filter kelas.</td></tr>`;
-      } else {
-        filteredDocs.forEach(item => {
-          const conf = studentVerificationStatus[item.nisn];
-          const teacherConf = teacherConfirmationStatus[item.nisn];
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-slate-950/60 transition-colors";
-
-          // Respon Siswa Badge & Catatan
-          let studentStatusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap">Belum Konfirmasi</span>`;
-          if (conf && conf.status === 'BENAR') {
-            studentStatusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 whitespace-nowrap">Sesuai (Terkunci)</span>`;
-          } else if (conf && conf.status === 'SALAH') {
-            studentStatusBadge = `
-              <div class="space-y-1">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 whitespace-nowrap">Laporan Salah</span>
-                <p class="text-[10px] text-rose-300 italic max-w-[170px] truncate" title="${conf.reasonNote || ''}">"${conf.reasonNote || 'Data tidak sesuai'}"</p>
-              </div>
-            `;
-          }
-
-          // Konfirmasi Guru Column with Benar & Salah Buttons
-          let teacherStatusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700 whitespace-nowrap">Belum Divalidasi</span>`;
-          if (teacherConf) {
-            if (teacherConf.status === 'BENAR') {
-              teacherStatusBadge = `
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 inline-flex items-center gap-1 whitespace-nowrap">
-                  <svg class="w-3 h-3 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  Guru: Benar
-                </span>
-              `;
-            } else if (teacherConf.status === 'SALAH') {
-              teacherStatusBadge = `
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 inline-flex items-center gap-1 whitespace-nowrap" title="${teacherConf.note || ''}">
-                  <svg class="w-3 h-3 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                  Guru: Salah
-                </span>
-              `;
-            }
-          }
-
-          tr.innerHTML = `
-            <td class="py-3 px-3">
-              <div class="font-bold text-white">${item.nama_siswa}</div>
-              <span class="inline-block mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">${item.kelas}</span>
-            </td>
-            <td class="py-3 px-3 font-mono text-sky-400 font-bold">${item.nisn}</td>
-            <td class="py-3 px-3">
-              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900 text-sky-300 border border-slate-700">${item.jenis_dokumen}</span>
-              <div class="font-mono text-[11px] text-slate-400 truncate max-w-[150px] mt-1">${item.file_name}</div>
-            </td>
-            <td class="py-3 px-3 text-slate-400 text-[11px] font-mono whitespace-nowrap">${new Date(item.uploaded_at).toLocaleDateString('id-ID')}</td>
-            <td class="py-3 px-3">${studentStatusBadge}</td>
-            <td class="py-3 px-3">
-              <div class="flex flex-col gap-1.5">
-                <div class="flex items-center gap-1.5">
-                  ${teacherStatusBadge}
-                  ${teacherConf ? `
-                    <button 
-                      onclick="resetGuruValidation('${item.nisn}', '${item.nama_siswa}')"
-                      class="text-[10px] text-slate-500 hover:text-slate-300 underline transition-colors"
-                      title="Reset validasi guru"
-                    >Reset</button>
-                  ` : ''}
-                </div>
-                <div class="flex items-center gap-1">
-                  <button 
-                    onclick="handleTeacherConfirmAction('${item.nisn}', '${item.nama_siswa}', 'BENAR')"
-                    class="px-2 py-0.5 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all shadow-sm active:scale-95"
-                    title="Konfirmasi Benar: otomatis mengunci data siswa sebagai Benar"
-                  >
-                    <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    <span>Benar</span>
-                  </button>
-                  <button 
-                    onclick="openGuruRejectModal('${item.nisn}', '${item.nama_siswa}')"
-                    class="px-2 py-0.5 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/40 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all shadow-sm active:scale-95"
-                    title="Konfirmasi Salah: otomatis menandai dan mengunci status siswa sebagai Salah"
-                  >
-                    <svg class="w-3 h-3 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    <span>Salah</span>
-                  </button>
-                </div>
-              </div>
-            </td>
-            <td class="py-3 px-3 text-right whitespace-nowrap">
-              <div class="flex items-center justify-end gap-1.5">
-                <button onclick="openImageModal('${item.id}')" class="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1" title="Pratinjau Berkas">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  <span>Lihat</span>
-                </button>
-                <a href="${item.file_url}" download="${item.file_name}" target="_blank" class="p-1.5 text-slate-400 hover:text-sky-400 rounded-lg transition-all" title="Unduh">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                </a>
-              </div>
-            </td>
+        if (!conf) {
+          responSiswaHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">Belum Respon</span>`;
+        } else if (conf.status === 'BENAR') {
+          responSiswaHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">Sesuai</span>`;
+        } else if (conf.status === 'SALAH') {
+          responSiswaHtml = `
+            <div class="space-y-1">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">Laporan Salah</span>
+              ${conf.reasonNote ? `<p class="text-[10px] text-rose-300 truncate max-w-[140px]" title="${conf.reasonNote}">"${conf.reasonNote}"</p>` : ''}
+            </div>
           `;
-          tbodyDocs.appendChild(tr);
-        });
-      }
+        }
+
+        let konfirmasiGuruHtml = '';
+        if (conf && conf.status === 'BENAR') {
+          konfirmasiGuruHtml = `
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Disahkan Guru
+              </span>
+              <button onclick="openGuruRejectModal('${item.nisn}', '${item.nama_siswa}')" class="p-1 hover:bg-slate-800 text-slate-400 hover:text-rose-400 rounded-lg transition-all" title="Ubah ke Tidak Sesuai">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          `;
+        } else if (conf && conf.status === 'SALAH') {
+          konfirmasiGuruHtml = `
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1">
+                <svg class="w-3 h-3 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Ditolak Guru
+              </span>
+              <button onclick="handleGuruConfirmBenar('${item.nisn}')" class="p-1 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 rounded-lg transition-all" title="Ubah ke Sesuai">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          `;
+        } else {
+          konfirmasiGuruHtml = `
+            <div class="flex items-center gap-1.5">
+              <button 
+                onclick="handleGuruConfirmBenar('${item.nisn}')"
+                class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-[10px] font-bold transition-all active:scale-95 flex items-center gap-1"
+              >
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Benar</span>
+              </button>
+              <button 
+                onclick="openGuruRejectModal('${item.nisn}', '${item.nama_siswa}')"
+                class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-lg text-[10px] font-bold transition-all active:scale-95 flex items-center gap-1"
+              >
+                <svg class="w-3 h-3 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <span>Salah</span>
+              </button>
+            </div>
+          `;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-900/60 transition-colors";
+        tr.innerHTML = `
+          <td class="py-3 px-3">
+            <div class="font-bold text-white">${item.nama_siswa}</div>
+            <div class="text-[10px] text-slate-400 font-semibold">${item.kelas}</div>
+          </td>
+          <td class="py-3 px-3 font-mono text-sky-400 font-bold">${item.nisn}</td>
+          <td class="py-3 px-3">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900 border border-slate-700 text-sky-300">${item.jenis_dokumen}</span>
+              <span class="text-slate-400 text-[11px] truncate max-w-[120px]">${item.file_name}</span>
+            </div>
+          </td>
+          <td class="py-3 px-3 text-slate-400 text-[11px] font-mono">${new Date(item.uploaded_at).toLocaleDateString('id-ID')}</td>
+          <td class="py-3 px-3">${responSiswaHtml}</td>
+          <td class="py-3 px-3">${konfirmasiGuruHtml}</td>
+          <td class="py-3 px-3 text-right">
+            <div class="flex items-center justify-end gap-1">
+              <button onclick="openImageModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-400 hover:bg-slate-800 rounded-lg transition-all" title="Buka Gambar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+              <a href="${item.file_url}" download="${item.file_name}" target="_blank" class="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition-all" title="Unduh Asli">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              </a>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    /* Teacher Confirmation Actions with Automatic Student Synchronization */
-    function handleTeacherConfirmAction(nisn, namaSiswa, status, note = "") {
-      const timestamp = new Date().toISOString();
-
-      // Sinkronkan ke Google Apps Script backend
-      fetchFromGAS('teacherConfirm', { nisn, status, note, teacherName: 'Guru / Wali Kelas' }, 'POST');
-
-      // Update Teacher Confirmation
-      teacherConfirmationStatus[nisn] = {
-        status: status,
-        timestamp: timestamp,
-        teacherName: "Guru / Wali Kelas",
-        note: note
-      };
-
-      // Otomatis Siswa Juga Terkonfirmasi & Terkunci
+    async function handleGuruConfirmBenar(nisn) {
+      const nowIso = new Date().toISOString();
       studentVerificationStatus[nisn] = {
-        status: status,
-        timestamp: timestamp,
-        reasonNote: status === 'SALAH' ? (note || "Ditetapkan tidak sesuai oleh Guru/Wali Kelas") : ""
+        status: 'BENAR',
+        timestamp: nowIso,
+        reasonNote: ""
       };
 
-      // If active student search is open, update its UI instantly
-      if (currentActiveStudent && currentActiveStudent.nisn === nisn) {
-        renderStudentConfirmationBox(nisn);
-      }
-
+      await fetchFromGAS('teacherConfirm', { nisn, status: 'BENAR', note: "", teacherName: "Wali Kelas" }, 'POST');
+      updateGuruStats();
+      renderGuruMasterTable();
       updateHasilBadgeCounter();
-      renderGuruPortal();
-
-      if (status === 'BENAR') {
-        showToast(`Berkas ${namaSiswa} dikonfirmasi BENAR oleh Guru. Status siswa otomatis terkunci Sesuai!`, 'success');
-      } else {
-        showToast(`Berkas ${namaSiswa} ditetapkan SALAH oleh Guru. Status siswa otomatis disinkronkan!`, 'info');
-      }
+      showToast(`Berkas siswa NISN ${nisn} dikonfirmasi Benar & otomatis dikunci!`, 'success');
     }
 
     function openGuruRejectModal(nisn, namaSiswa) {
-      pendingGuruRejectTarget = { nisn, namaSiswa };
+      guruRejectTargetNISN = nisn;
       document.getElementById('guruRejectStudentName').textContent = namaSiswa;
       document.getElementById('guruRejectStudentNISN').textContent = nisn;
       document.getElementById('guruRejectNoteInput').value = '';
@@ -2242,93 +2282,71 @@
     }
 
     function closeGuruRejectModal() {
-      pendingGuruRejectTarget = null;
+      guruRejectTargetNISN = null;
       const modal = document.getElementById('modalGuruReject');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     }
 
-    function submitGuruRejectAction() {
-      if (!pendingGuruRejectTarget) return;
+    async function submitGuruRejectAction() {
+      if (!guruRejectTargetNISN) return;
       const note = document.getElementById('guruRejectNoteInput').value.trim();
-
       if (!note) {
-        showToast('Mohon tuliskan rincian kesalahan atau ketidaksesuaian berkas!', 'warning');
+        showToast('Wajib memberikan catatan alasan ketidaksesuaian!', 'warning');
         return;
       }
 
-      const { nisn, namaSiswa } = pendingGuruRejectTarget;
+      const nisn = guruRejectTargetNISN;
+      const nowIso = new Date().toISOString();
+
+      studentVerificationStatus[nisn] = {
+        status: 'SALAH',
+        timestamp: nowIso,
+        reasonNote: note
+      };
+
+      await fetchFromGAS('teacherConfirm', { nisn, status: 'SALAH', note, teacherName: "Wali Kelas" }, 'POST');
       closeGuruRejectModal();
-      handleTeacherConfirmAction(nisn, namaSiswa, 'SALAH', note);
-    }
-
-    function resetGuruValidation(nisn, namaSiswa) {
-      fetchFromGAS('resetVerification', { nisn }, 'POST');
-
-      delete teacherConfirmationStatus[nisn];
-      delete studentVerificationStatus[nisn];
-
-      if (currentActiveStudent && currentActiveStudent.nisn === nisn) {
-        renderStudentConfirmationBox(nisn);
-      }
-
+      updateGuruStats();
+      renderGuruMasterTable();
       updateHasilBadgeCounter();
-      renderGuruPortal();
-      showToast(`Validasi Guru dan status siswa untuk ${namaSiswa} telah di-reset.`, 'info');
+      showToast(`Berkas siswa NISN ${nisn} ditandai Tidak Sesuai (Salah)!`, 'info');
     }
 
     function exportGuruSummaryExcel() {
-      const selectedKelas = document.getElementById('guruFilterKelas').value;
-      const allUniqueStudents = getUniqueStudents();
-      const filteredStudents = allUniqueStudents.filter(st => (selectedKelas === 'ALL' || st.kelas === selectedKelas));
+      const kelasFilter = document.getElementById('guruFilterKelas').value;
+      const docs = mockDatabase.filter(d => kelasFilter === 'ALL' || d.kelas === kelasFilter);
 
-      if (filteredStudents.length === 0) {
-        showToast('Tidak ada data siswa untuk diekspor!', 'warning');
+      if (docs.length === 0) {
+        showToast('Tidak ada data arsip untuk diekspor pada filter ini!', 'warning');
         return;
       }
 
-      const exportData = filteredStudents.map((st, idx) => {
-        const conf = studentVerificationStatus[st.nisn];
-        const teacherConf = teacherConfirmationStatus[st.nisn];
+      const exportData = docs.map((item, idx) => {
+        const conf = studentVerificationStatus[item.nisn];
         return {
           "No": idx + 1,
-          "NISN": st.nisn,
-          "Nama Siswa": st.nama_siswa,
-          "Kelas / Rombel": st.kelas,
-          "Jumlah Berkas": st.total_docs,
-          "Status Konfirmasi Siswa": conf ? conf.status : "BELUM KONFIRMASI",
-          "Waktu Konfirmasi Siswa": conf ? conf.timestamp : "-",
-          "Catatan Sanggahan Siswa": conf ? conf.reasonNote : "",
-          "Status Konfirmasi Guru": teacherConf ? teacherConf.status : "BELUM DIVALIDASI",
-          "Catatan Guru": teacherConf ? teacherConf.note : "-",
-          "Waktu Konfirmasi Guru": teacherConf ? teacherConf.timestamp : "-"
+          "NISN": item.nisn,
+          "Nama Siswa": item.nama_siswa,
+          "Kelas": item.kelas,
+          "Jenis Dokumen": item.jenis_dokumen,
+          "Nama File": item.file_name,
+          "Status Respon": conf ? conf.status : "BELUM RESPON",
+          "Catatan": conf ? (conf.reasonNote || "-") : "-"
         };
       });
 
       const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, `Rekap_Kelas_${selectedKelas.replace(/\s+/g, '_')}`);
-
-      XLSX.writeFile(wb, `Rekap_Arsip_Guru_${selectedKelas.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
-      showToast('Rekapitulasi kelas berhasil diekspor ke Excel!', 'success');
+      XLSX.utils.book_append_sheet(wb, ws, `Rekap_${kelasFilter.replace(/\s+/g, '_')}`);
+      XLSX.writeFile(wb, `Rekap_Portal_Guru_${kelasFilter.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+      showToast('Rekap Portal Guru berhasil diunduh!', 'success');
     }
 
-    // =========================================================================
-    // ADMIN AUTH & CRUD HANDLERS
-    // =========================================================================
-    async function handleAdminLogin(event) {
+    function handleAdminLogin(event) {
       event.preventDefault();
       const u = document.getElementById('adminUsername').value.trim();
       const p = document.getElementById('adminPassword').value.trim();
-
-      // Coba otentikasi ke Google Apps Script
-      const remoteRes = await fetchFromGAS('login', { username: u, password: p, expectedRole: 'ADMIN' }, 'POST');
-      if (remoteRes && remoteRes.status === 'success') {
-        isAdminLoggedIn = true;
-        showToast('Login Admin berhasil via Google Cloud!', 'success');
-        renderAdminState();
-        return;
-      }
 
       if (u === 'admin' && p === '123456') {
         isAdminLoggedIn = true;
@@ -2354,7 +2372,6 @@
         dashboard.classList.remove('hidden');
         updateAdminStats();
         renderMasterTable();
-        updateHasilBadgeCounter();
       } else {
         loginForm.classList.remove('hidden');
         dashboard.classList.add('hidden');
@@ -2370,12 +2387,11 @@
     }
 
     function filterMasterTable() {
-      const query = document.getElementById('tableSearchQuery').value.toLowerCase();
+      const query = document.getElementById('tableSearchQuery').value.toLowerCase().trim();
       filteredMasterData = mockDatabase.filter(item => 
         item.nisn.includes(query) || 
         item.nama_siswa.toLowerCase().includes(query) ||
-        item.jenis_dokumen.toLowerCase().includes(query) ||
-        item.kelas.toLowerCase().includes(query)
+        item.jenis_dokumen.toLowerCase().includes(query)
       );
       currentPage = 1;
       renderMasterTable();
@@ -2390,30 +2406,30 @@
       const pageItems = filteredMasterData.slice(start, end);
 
       if (pageItems.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500">Tidak ada data arsip yang cocok.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500">Tidak ada data arsip.</td></tr>`;
       } else {
         pageItems.forEach(item => {
           const tr = document.createElement('tr');
-          tr.className = "hover:bg-slate-950/60 transition-colors";
+          tr.className = "hover:bg-slate-900/60 transition-colors";
           tr.innerHTML = `
             <td class="py-3 px-3">
               <div class="font-bold text-white">${item.nama_siswa}</div>
-              <div class="text-[10px] text-slate-400 font-semibold">${item.kelas}</div>
+              <div class="text-[10px] text-slate-400">${item.kelas}</div>
             </td>
             <td class="py-3 px-3 font-mono text-sky-400 font-bold">${item.nisn}</td>
             <td class="py-3 px-3">
-              <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-900 text-sky-300 border border-slate-700">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900 border border-slate-700 text-sky-300">
                 ${item.jenis_dokumen}
               </span>
             </td>
-            <td class="py-3 px-3 text-slate-400 text-[11px] font-mono">${new Date(item.uploaded_at).toLocaleDateString('id-ID')}</td>
+            <td class="py-3 px-3 text-slate-400 text-[11px]">${new Date(item.uploaded_at).toLocaleDateString('id-ID')}</td>
             <td class="py-3 px-3 text-right">
               <div class="flex items-center justify-end gap-1.5">
-                <button onclick="openImageModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-400 hover:bg-slate-800 rounded-lg transition-all" title="Pratinjau">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                </button>
                 <button onclick="openEditModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition-all" title="Edit Data">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </button>
+                <button onclick="openImageModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-400 hover:bg-slate-800 rounded-lg transition-all" title="Pratinjau">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 </button>
                 <button onclick="promptDeleteRecord('${item.id}', '${item.nama_siswa}', '${item.jenis_dokumen}')" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all" title="Hapus Berkas">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -2447,8 +2463,8 @@
       const kelas = document.getElementById('upKelas').value;
       const jenis = document.getElementById('upJenis').value;
 
-      if (nisn.length < 10) {
-        showToast('NISN wajib 10 digit!', 'warning');
+      if (nisn.length < 8) {
+        showToast('NISN wajib 8 hingga 10 digit!', 'warning');
         return;
       }
 
@@ -2461,28 +2477,26 @@
       document.getElementById('globalLoadingOverlay').classList.remove('hidden');
       document.getElementById('globalLoadingOverlay').classList.add('flex');
 
-      // Upload ke backend Google Apps Script
-      const remoteRes = await fetchFromGAS('uploadDocument', {
+      const uploadPayload = {
         nisn,
         nama_siswa: nama,
         kelas,
         jenis_dokumen: jenis,
         base64_data: currentCompressedBase64,
-        uploaded_by: 'admin_tu'
-      }, 'POST');
+        uploaded_by: "admin_tu"
+      };
+
+      const gasRes = await fetchFromGAS('uploadDocument', uploadPayload, 'POST');
 
       setTimeout(() => {
-        const fileId = (remoteRes && remoteRes.data) ? remoteRes.data.file_id : `GDRIVE_${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-        const fileUrl = (remoteRes && remoteRes.data) ? remoteRes.data.file_url : currentCompressedBase64;
-
         const newRecord = {
-          id: (remoteRes && remoteRes.data) ? remoteRes.data.id : `DOC-2026-${Math.floor(100 + Math.random() * 900)}`,
+          id: gasRes?.data?.id || `DOC-2026-${Math.floor(100 + Math.random() * 900)}`,
           nisn: nisn,
           nama_siswa: nama,
           kelas: kelas,
           jenis_dokumen: jenis,
-          file_id: fileId,
-          file_url: fileUrl,
+          file_id: gasRes?.data?.file_id || `GDRIVE_${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
+          file_url: gasRes?.data?.file_url || currentCompressedBase64,
           file_name: `${jenis.toLowerCase().replace(/\s+/g, '_')}_${nisn}.jpg`,
           uploaded_at: new Date().toISOString(),
           uploaded_by: "admin_tu"
@@ -2501,20 +2515,19 @@
 
         updateAdminStats();
         renderMasterTable();
-        showToast(`Berkas ${jenis} milik ${nama} (${kelas}) berhasil diarsipkan!`, 'success');
-      }, 550);
+        showToast(`Berkas ${jenis} milik ${nama} berhasil diarsipkan ke Google Drive!`, 'success');
+      }, 600);
     }
 
-    /* Edit Modal Logic */
     function openEditModal(id) {
-      const item = mockDatabase.find(d => d.id === id);
-      if (!item) return;
+      const doc = mockDatabase.find(d => d.id === id);
+      if (!doc) return;
 
-      document.getElementById('editRecordId').value = item.id;
-      document.getElementById('editNamaSiswa').value = item.nama_siswa;
-      document.getElementById('editNISN').value = item.nisn;
-      document.getElementById('editKelas').value = item.kelas;
-      document.getElementById('editJenis').value = item.jenis_dokumen;
+      document.getElementById('editRecordId').value = doc.id;
+      document.getElementById('editNamaSiswa').value = doc.nama_siswa;
+      document.getElementById('editNISN').value = doc.nisn;
+      document.getElementById('editKelas').value = doc.kelas;
+      document.getElementById('editJenis').value = doc.jenis_dokumen;
 
       const modal = document.getElementById('modalEditRecord');
       modal.classList.remove('hidden');
@@ -2527,7 +2540,7 @@
       modal.classList.remove('flex');
     }
 
-    function handleEditFormSubmit(event) {
+    async function handleEditFormSubmit(event) {
       event.preventDefault();
       const id = document.getElementById('editRecordId').value;
       const nama = document.getElementById('editNamaSiswa').value.trim();
@@ -2535,27 +2548,25 @@
       const kelas = document.getElementById('editKelas').value;
       const jenis = document.getElementById('editJenis').value;
 
-      fetchFromGAS('editDocument', { id, nama_siswa: nama, nisn, kelas, jenis_dokumen: jenis }, 'POST');
-
-      const item = mockDatabase.find(d => d.id === id);
-      if (item) {
-        item.nama_siswa = nama;
-        item.nisn = nisn;
-        item.kelas = kelas;
-        item.jenis_dokumen = jenis;
-        
-        filteredMasterData = [...mockDatabase];
-        renderMasterTable();
-        updateAdminStats();
-        closeEditModal();
-        showToast('Data arsip berhasil diperbarui!', 'success');
+      const doc = mockDatabase.find(d => d.id === id);
+      if (doc) {
+        doc.nama_siswa = nama;
+        doc.nisn = nisn;
+        doc.kelas = kelas;
+        doc.jenis_dokumen = jenis;
       }
+
+      await fetchFromGAS('editDocument', { id, nama_siswa: nama, nisn, kelas, jenis_dokumen: jenis }, 'POST');
+
+      closeEditModal();
+      renderMasterTable();
+      if (isGuruLoggedIn) renderGuruMasterTable();
+      showToast('Perubahan data berkas berhasil disimpan!', 'success');
     }
 
-    /* Delete Record Handlers */
     function promptDeleteRecord(id, nama, jenis) {
       itemToDeleteId = id;
-      document.getElementById('deleteModalText').textContent = `Apakah Anda yakin ingin menghapus berkas "${jenis}" milik ${nama}? Tindakan ini tidak dapat dibatalkan.`;
+      document.getElementById('deleteModalText').textContent = `Apakah Anda yakin ingin menghapus berkas "${jenis}" milik ${nama}? Tindakan ini akan memindahkan file ke tempat sampah Google Drive.`;
       const modal = document.getElementById('modalDeleteConfirm');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -2568,18 +2579,263 @@
       modal.classList.remove('flex');
     }
 
-    function executeDeleteRecord() {
+    async function executeDeleteRecord() {
       if (!itemToDeleteId) return;
+      const delId = itemToDeleteId;
 
-      fetchFromGAS('deleteDocument', { id: itemToDeleteId }, 'POST');
+      await fetchFromGAS('deleteDocument', { id: delId }, 'POST');
 
-      mockDatabase = mockDatabase.filter(d => d.id !== itemToDeleteId);
-      filteredMasterData = mockDatabase.filter(d => d.id !== itemToDeleteId);
+      mockDatabase = mockDatabase.filter(d => d.id !== delId);
+      filteredMasterData = mockDatabase.filter(d => d.id !== delId);
 
       closeDeleteModal();
       updateAdminStats();
       renderMasterTable();
-      showToast('Berkas berhasil dihapus dari Google Drive & Database.', 'info');
+      if (isGuruLoggedIn) {
+        updateGuruStats();
+        renderGuruMasterTable();
+      }
+      showToast('Berkas berhasil dihapus dari Google Drive & database.', 'info');
+    }
+
+    function downloadBulkImportTemplate() {
+      const templateData = [
+        {
+          "NISN (10 Digit)": "0081234567",
+          "Nama Lengkap Siswa": "Ahmad Pratama",
+          "Kelas": "XII FL 1",
+          "Jenis Dokumen": "Foto",
+          "Link Google Drive / ID File": "https://drive.google.com/file/d/1A2B3C4D_FOTO_SAMPLE/view?usp=sharing",
+          "Nama File": "foto_ahmad.jpg"
+        },
+        {
+          "NISN (10 Digit)": "0082345678",
+          "Nama Lengkap Siswa": "Siti Nurhaliza",
+          "Kelas": "XII FL 2",
+          "Jenis Dokumen": "Ijazah",
+          "Link Google Drive / ID File": "https://drive.google.com/file/d/2B3C4D5E_IJAZAH_SAMPLE/view?usp=sharing",
+          "Nama File": "ijazah_siti.jpg"
+        },
+        {
+          "NISN (10 Digit)": "0083456789",
+          "Nama Lengkap Siswa": "Rian Hidayat",
+          "Kelas": "XII FL 3",
+          "Jenis Dokumen": "Rapor Semester",
+          "Link Google Drive / ID File": "https://drive.google.com/file/d/3C4D5E6F_RAPOR_SAMPLE/view?usp=sharing",
+          "Nama File": "rapor_rian.jpg"
+        }
+      ];
+
+      const ws = XLSX.utils.json_to_sheet(templateData);
+      ws['!cols'] = [
+        { wch: 18 },
+        { wch: 25 },
+        { wch: 14 },
+        { wch: 18 },
+        { wch: 65 },
+        { wch: 20 }
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Template_Import_Berkas");
+      XLSX.writeFile(wb, "Template_Unggah_Kolektif_Berkas_Siswa.xlsx");
+      showToast('Template Excel berhasil diunduh. Silakan isi data dan unggah kembali!', 'success');
+    }
+
+    function triggerBulkFileInput() {
+      const fileInput = document.getElementById('inputBulkFile');
+      if (fileInput) {
+        fileInput.value = '';
+        fileInput.click();
+      }
+    }
+
+    function openBulkImportModal() {
+      parsedBulkRows = [];
+      const fileInput = document.getElementById('inputBulkFile');
+      if (fileInput) fileInput.value = '';
+      
+      document.getElementById('bulkFilePlaceholder').classList.remove('hidden');
+      document.getElementById('bulkFileLoadedInfo').classList.add('hidden');
+      document.getElementById('bulkPreviewContainer').classList.add('hidden');
+      document.getElementById('btnExecuteBulkImport').disabled = true;
+      document.getElementById('btnExecuteBulkText').textContent = 'Proses & Simpan Semua Arsip';
+
+      const modal = document.getElementById('modalBulkImport');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeBulkImportModal() {
+      const modal = document.getElementById('modalBulkImport');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function extractDriveId(inputUrl) {
+      if (!inputUrl) return '';
+      const str = String(inputUrl).trim();
+      if (!str.includes('/') && str.length >= 10) return str;
+
+      const fileIdMatch = str.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (fileIdMatch && fileIdMatch[1]) return fileIdMatch[1];
+      return str;
+    }
+
+    function handleBulkExcelSelection(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+          if (!rawRows || rawRows.length === 0) {
+            showToast('File Excel kosong atau format kolom tidak sesuai!', 'warning');
+            return;
+          }
+
+          parsedBulkRows = [];
+          rawRows.forEach((row, index) => {
+            const nisn = String(
+              row["NISN (10 Digit)"] || row["NISN"] || row["nisn"] || row["Nomor Induk"] || ""
+            ).trim();
+            
+            const nama = String(
+              row["Nama Lengkap Siswa"] || row["Nama Siswa"] || row["Nama"] || row["nama_siswa"] || ""
+            ).trim();
+
+            const kelas = String(
+              row["Kelas"] || row["kelas"] || row["Rombel"] || "XII FL 1"
+            ).trim();
+
+            const jenis = String(
+              row["Jenis Dokumen"] || row["jenis_dokumen"] || row["Jenis"] || row["Dokumen"] || "Ijazah"
+            ).trim();
+
+            const rawLink = String(
+              row["Link Google Drive / ID File"] || row["Link Drive"] || row["Link Google Drive"] || 
+              row["Link"] || row["URL"] || row["File ID"] || row["file_id"] || ""
+            ).trim();
+
+            const fileName = String(
+              row["Nama File"] || `${jenis.toLowerCase().replace(/\s+/g, '_')}_${nisn}.jpg`
+            ).trim();
+
+            const driveId = extractDriveId(rawLink);
+            const isValidNisn = nisn.length >= 8 && /^\d+$/.test(nisn);
+            const isValid = isValidNisn && nama.length > 0 && driveId.length > 0;
+
+            parsedBulkRows.push({
+              no: index + 1,
+              nisn,
+              nama_siswa: nama,
+              kelas,
+              jenis_dokumen: jenis,
+              raw_link: rawLink,
+              drive_id: driveId,
+              file_name: fileName,
+              is_valid: isValid
+            });
+          });
+
+          document.getElementById('bulkFilePlaceholder').classList.add('hidden');
+          document.getElementById('bulkFileLoadedInfo').classList.remove('hidden');
+          document.getElementById('bulkLoadedFileName').textContent = file.name;
+          
+          const validCount = parsedBulkRows.filter(r => r.is_valid).length;
+          document.getElementById('bulkLoadedStats').textContent = `${parsedBulkRows.length} baris data terbaca (${validCount} valid & siap diunggah)`;
+          document.getElementById('bulkBadgePreviewSummary').textContent = `${validCount} dari ${parsedBulkRows.length} baris valid`;
+
+          const tbody = document.getElementById('bulkPreviewTableBody');
+          tbody.innerHTML = '';
+
+          parsedBulkRows.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.className = row.is_valid ? "hover:bg-slate-900/60 transition-colors" : "bg-rose-950/25 text-rose-300";
+
+            tr.innerHTML = `
+              <td class="py-2.5 px-3 font-mono text-slate-400">${row.no}</td>
+              <td class="py-2.5 px-3 font-mono ${row.is_valid ? 'text-sky-400 font-bold' : 'text-rose-400'}">${row.nisn || '-'}</td>
+              <td class="py-2.5 px-3 font-semibold text-white">${row.nama_siswa || '-'}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-300">${row.kelas}</td>
+              <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900 border border-slate-700 text-sky-300">${row.jenis_dokumen}</span></td>
+              <td class="py-2.5 px-3 font-mono text-slate-400 max-w-[200px] truncate" title="${row.raw_link}">${row.drive_id || '-'}</td>
+              <td class="py-2.5 px-3 text-right font-bold whitespace-nowrap">
+                ${row.is_valid 
+                  ? '<span class="inline-flex items-center gap-1 text-emerald-400"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Siap</span>' 
+                  : '<span class="inline-flex items-center gap-1 text-rose-400" title="Data belum lengkap (NISN/Nama/Link Drive)"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Kurang</span>'}
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          document.getElementById('bulkPreviewContainer').classList.remove('hidden');
+          document.getElementById('btnExecuteBulkImport').disabled = (validCount === 0);
+          document.getElementById('btnExecuteBulkText').textContent = `Proses & Simpan ${validCount} Berkas`;
+          showToast(`File Excel dibaca: ${validCount} baris siap diarsipkan!`, 'info');
+        } catch (err) {
+          console.error(err);
+          showToast('Gagal memproses file Excel: ' + err.message, 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    async function executeBulkImport() {
+      const validRows = parsedBulkRows.filter(r => r.is_valid);
+      if (validRows.length === 0) {
+        showToast('Tidak ada baris data valid yang dapat diimpor!', 'warning');
+        return;
+      }
+
+      document.getElementById('loadingOverlayText').textContent = `Mengarsipkan ${validRows.length} berkas kolektif ke Google Drive...`;
+      document.getElementById('globalLoadingOverlay').classList.remove('hidden');
+      document.getElementById('globalLoadingOverlay').classList.add('flex');
+
+      const nowIso = new Date().toISOString();
+      const documentsPayload = validRows.map((r, idx) => {
+        const fileId = r.drive_id;
+        const fileUrl = fileId.startsWith('http') ? fileId : `https://lh3.googleusercontent.com/d/${fileId}`;
+        
+        return {
+          id: `DOC-2026-B${Math.floor(100 + Math.random() * 900)}${idx}`,
+          nisn: r.nisn,
+          nama_siswa: r.nama_siswa,
+          kelas: r.kelas,
+          jenis_dokumen: r.jenis_dokumen,
+          file_id: fileId,
+          file_url: fileUrl,
+          file_name: r.file_name,
+          uploaded_at: nowIso,
+          uploaded_by: "admin_tu"
+        };
+      });
+
+      await fetchFromGAS('batchImportDocuments', { documents: documentsPayload }, 'POST');
+
+      documentsPayload.forEach(doc => {
+        mockDatabase.unshift(doc);
+      });
+
+      filteredMasterData = [...mockDatabase];
+
+      setTimeout(() => {
+        document.getElementById('globalLoadingOverlay').classList.add('hidden');
+        document.getElementById('globalLoadingOverlay').classList.remove('flex');
+
+        closeBulkImportModal();
+        updateAdminStats();
+        renderMasterTable();
+        updateHasilBadgeCounter();
+
+        showToast(`Berhasil mengarsipkan ${documentsPayload.length} berkas secara kolektif!`, 'success');
+      }, 650);
     }
 
     function getUniqueStudents() {
@@ -2691,7 +2947,7 @@
             <div class="flex items-center justify-end gap-1.5">
               <button 
                 onclick="quickFillNISN('${st.nisn}')" 
-                class="px-2 py-1 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-lg text-[11px] font-semibold transition-all"
+                class="px-2.5 py-1 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-lg text-[11px] font-semibold transition-all"
                 title="Buka Berkas Siswa"
               >
                 Cek Berkas
@@ -2699,7 +2955,7 @@
               ${conf ? `
                 <button 
                   onclick="resetStudentLock('${st.nisn}')" 
-                  class="px-2 py-1 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 rounded-lg text-[11px] font-semibold transition-all"
+                  class="px-2.5 py-1 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 rounded-lg text-[11px] font-semibold transition-all"
                   title="Buka Kunci agar siswa bisa verifikasi ulang"
                 >
                   Reset Kunci
@@ -2716,8 +2972,8 @@
       renderHasilTable();
     }
 
-    function resetStudentLock(nisn) {
-      fetchFromGAS('resetVerification', { nisn }, 'POST');
+    async function resetStudentLock(nisn) {
+      await fetchFromGAS('resetVerification', { nisn }, 'POST');
 
       if (studentVerificationStatus[nisn]) {
         delete studentVerificationStatus[nisn];
@@ -2727,7 +2983,6 @@
       }
     }
 
-    /* Client-side Excel Exports via SheetJS */
     function exportMasterExcel() {
       if (mockDatabase.length === 0) {
         showToast('Tidak ada data arsip untuk diekspor!', 'warning');
@@ -2783,13 +3038,11 @@
       showToast('Rekap Hasil Siswa berhasil diekspor!', 'success');
     }
 
-    /* Page Initialization & Health Check */
     window.addEventListener('DOMContentLoaded', async () => {
       renderMasterTable();
       updateAdminStats();
       updateHasilBadgeCounter();
 
-      // Cek koneksi live ke backend Google Apps Script jika URL sudah diisi
       if (GAS_ENDPOINT_URL && !GAS_ENDPOINT_URL.includes('AKfycbx_GDRIVE_PORTAL_ENDPOINT_HERE')) {
         const health = await fetchFromGAS('checkHealth', {}, 'GET');
         const badge = document.getElementById('backendStatusLabel');

@@ -12,8 +12,7 @@
  * =========================================================================
  */
 
-
-SHEET_STUDENTS = 'STUDENTS_DATA';
+const SHEET_STUDENTS = 'STUDENTS_DATA';
 const SHEET_VERIFICATION = 'VERIFIKASI_STATUS';
 const SHEET_USERS = 'ADMIN_USERS';
 const DRIVE_FOLDER_NAME = 'ARSIP_BERKAS_SISWA_DRIVE';
@@ -58,8 +57,8 @@ function setupDatabase() {
     sheetUsers.setFrozenRows(1);
 
     // Tambah akun default awal
-    sheetUsers.appendRow(['', '', 'Administrator TU', 'ADMIN', 'ACTIVE', new Date().toISOString()]);
-    sheetUsers.appendRow(['', '', 'Wali Kelas / Guru Pembina', 'GURU', 'ACTIVE', new Date().toISOString()]);
+    sheetUsers.appendRow(['admin', '123456', 'Administrator TU', 'ADMIN', 'ACTIVE', new Date().toISOString()]);
+    sheetUsers.appendRow(['guru', '123456', 'Wali Kelas / Guru Pembina', 'GURU', 'ACTIVE', new Date().toISOString()]);
   }
 
   // 4. Inisialisasi Folder Google Drive

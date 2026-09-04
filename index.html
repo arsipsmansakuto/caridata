@@ -730,16 +730,6 @@
                   id="adminUploadKelas" 
                   class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-sky-500"
                 >
-                  <option value="XII FL 1">XII FL 1</option>
-                  <option value="XII FL 2">XII FL 2</option>
-                  <option value="XII FL 3">XII FL 3</option>
-                  <option value="XII FL 4">XII FL 4</option>
-                  <option value="XII FL 5">XII FL 5</option>
-                  <option value="XII FL 6">XII FL 6</option>
-                  <option value="XII FL 7">XII FL 7</option>
-                  <option value="XII FL 8">XII FL 8</option>
-                  <option value="XII FL 9">XII FL 9</option>
-                  <option value="XII FL 10">XII FL 10</option>
                   <option value="Kelas XII">Kelas XII</option>
                   <option value="Kelas XI">Kelas XI</option>
                   <option value="Kelas X">Kelas X</option>
@@ -812,16 +802,6 @@
                     class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-sky-500 transition-colors"
                   >
                     <option value="ALL">Semua Kelas</option>
-                    <option value="XII FL 1">XII FL 1</option>
-                    <option value="XII FL 2">XII FL 2</option>
-                    <option value="XII FL 3">XII FL 3</option>
-                    <option value="XII FL 4">XII FL 4</option>
-                    <option value="XII FL 5">XII FL 5</option>
-                    <option value="XII FL 6">XII FL 6</option>
-                    <option value="XII FL 7">XII FL 7</option>
-                    <option value="XII FL 8">XII FL 8</option>
-                    <option value="XII FL 9">XII FL 9</option>
-                    <option value="XII FL 10">XII FL 10</option>
                     <option value="Kelas XII">Kelas XII</option>
                     <option value="Kelas XI">Kelas XI</option>
                     <option value="Kelas X">Kelas X</option>
@@ -953,16 +933,6 @@
         <div>
           <label class="block font-semibold text-slate-300 mb-1">Kelas Rombel</label>
           <select id="editDocKelas" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white">
-            <option value="XII FL 1">XII FL 1</option>
-            <option value="XII FL 2">XII FL 2</option>
-            <option value="XII FL 3">XII FL 3</option>
-            <option value="XII FL 4">XII FL 4</option>
-            <option value="XII FL 5">XII FL 5</option>
-            <option value="XII FL 6">XII FL 6</option>
-            <option value="XII FL 7">XII FL 7</option>
-            <option value="XII FL 8">XII FL 8</option>
-            <option value="XII FL 9">XII FL 9</option>
-            <option value="XII FL 10">XII FL 10</option>
             <option value="Kelas XII">Kelas XII</option>
             <option value="Kelas XI">Kelas XI</option>
             <option value="Kelas X">Kelas X</option>
@@ -1141,7 +1111,7 @@
      * Konfigurasi Integrasi Google Apps Script Web App:
      * Tempelkan URL Deployment Web App Anda pada konstanta GAS_ENDPOINT_URL di bawah ini.
      */
-    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbwCem5bPJ6mQtQEpJ-ql5ERdZWAa9KbDwegsBeKf87HVeqp7B1tDZLPS5hwUwzwK_-Y/exec"; 
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbwls9c51TbmvveRQIMkfTDVT3D5VHY1jfM8LjR4rDKesX1JOzuQgq8Ut6L3_8oh9gv_/exec"; 
 
     // Helper panggil Google Apps Script dengan konfigurasi anti-CORS redirect follow
     async function fetchFromGAS(action, method = 'GET', payload = null) {
@@ -1899,15 +1869,17 @@
       const currentSelected = selectEl.value || 'ALL';
 
       const defaultClasses = [
-        'XII FL 1', 'XII FL 2', 'XII FL 3', 'XII FL 4', 'XII FL 5',
-        'XII FL 6', 'XII FL 7', 'XII FL 8', 'XII FL 9', 'XII FL 10',
         'Kelas XII', 'Kelas XI', 'Kelas X'
       ];
 
       const detectedClasses = new Set(defaultClasses);
       localDocuments.forEach(doc => {
         if (doc.kelas && String(doc.kelas).trim()) {
-          detectedClasses.add(String(doc.kelas).trim());
+          // Hanya tambahkan kelas umum selain format XII FL
+          const kls = String(doc.kelas).trim();
+          if (!/^XII\s+FL\s+\d+$/i.test(kls)) {
+            detectedClasses.add(kls);
+          }
         }
       });
 

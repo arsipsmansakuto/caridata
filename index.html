@@ -795,25 +795,61 @@
     <div class="relative max-w-4xl w-full bg-slate-900 rounded-3xl border border-slate-800 p-4 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <div>
-          <h4 id="lightboxTitle" class="text-sm font-bold text-white">-</h4>
-          <p id="lightboxSub" class="text-xs text-slate-400">-</p>
+          <div class="flex items-center gap-2">
+            <h4 id="lightboxTitle" class="text-sm font-bold text-white">-</h4>
+            <span id="lightboxFormatBadge" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20">FORMAT: .JPG</span>
+          </div>
+          <p id="lightboxSub" class="text-xs text-slate-400 mt-0.5">-</p>
         </div>
-        <button onclick="closeLightboxModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white">
+        <button onclick="closeLightboxModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <div class="flex-1 overflow-auto flex items-center justify-center p-4">
-        <img id="lightboxImage" src="" alt="Pratinjau Dokumen" class="max-w-full max-h-[70vh] rounded-xl object-contain shadow-md" />
-      </div>
-      <div class="pt-3 border-t border-slate-800 flex justify-end">
-        <a id="lightboxDownloadBtn" href="" target="_blank" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      <div class="flex-1 overflow-auto flex flex-col items-center justify-center p-4 relative min-h-[320px]">
+        <div id="lightboxLoadingSpinner" class="absolute inset-0 flex items-center justify-center bg-slate-900/60 pointer-events-none hidden">
+          <div class="w-8 h-8 border-3 border-sky-500/20 border-t-sky-500 rounded-full animate-spin"></div>
+        </div>
+        <img 
+          id="lightboxImage" 
+          src="" 
+          alt="Pratinjau Dokumen JPG" 
+          class="max-w-full max-h-[70vh] rounded-xl object-contain shadow-2xl transition-all duration-200" 
+          onload="document.getElementById('lightboxLoadingSpinner')?.classList.add('hidden')"
+          onerror="handleLightboxImageError(this)" 
+        />
+        <div id="lightboxErrorBanner" class="hidden text-center p-6 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 max-w-md">
+          <svg class="w-8 h-8 text-amber-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <span>Buka Resolusi Penuh</span>
-        </a>
+          <p class="text-xs font-semibold text-slate-200">Pratinjau langsung memerlukan izin tautan Drive publik.</p>
+          <p class="text-[11px] text-slate-400">Pastikan file atau folder Drive disetel "Siapa saja yang memiliki link dapat melihat".</p>
+          <a id="lightboxDriveFallbackLink" href="" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold text-sky-400 hover:underline pt-1">
+            <span>Buka Langsung di Google Drive Web</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <span class="text-[11px] text-slate-400 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>Resolusi Tinggi Google Drive Stream (.jpg)</span>
+        </span>
+        <div class="flex items-center gap-2">
+          <a id="lightboxDriveDirectBtn" href="" target="_blank" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all">
+            <svg class="w-3.5 h-3.5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            <span>Drive Viewer</span>
+          </a>
+          <a id="lightboxDownloadBtn" href="" target="_blank" download="dokumen.jpg" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-sky-600/20 transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>Buka File Gambar JPG</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -997,7 +1033,7 @@
      */
 
     // Placeholder URL Google Apps Script Backend (Isi dengan link Web App /exec Anda)
-    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxp0LHus1aLJrh2V6IiM3R0TGGCQbYynSVXpJU09eiPh4VB9k3asSmUXWpOI5xMGflj/exec";
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbz5HA3tbvH0IR38nORkyV-lg1p81jcvwlEtd-OuzuH8w5GVvz2Q69u2zzGqJbeKeqwH/exec";
 
     // Kunci Penyimpanan Cache Persistensi Browser
     const STORAGE_KEY_DOCS = "portal_arsip_docs_v4";
@@ -1067,12 +1103,69 @@
     // State Aktif
     let localDocuments = [...defaultDocuments];
     let localVerifications = { ...defaultVerifications };
-
-    // State Sesi
-    let currentGuruSession = null;
     let currentAdminSession = null;
-    let stagedBulkDocuments = [];
+    let currentGuruSession = null;
     let activeRejectNISN = null;
+    let stagedBulkDocuments = [];
+
+    // Helper Konversi Tautan Google Drive ke URL Direct Stream Ekstensi .JPG Asli
+    function formatDriveToDirectJpgUrl(rawUrlOrId) {
+      if (!rawUrlOrId) return 'https://placehold.co/800x1100/0f172a/38bdf8?text=Dokumen+Digital.jpg';
+      const str = String(rawUrlOrId).trim();
+      
+      // Jika sudah berupa data base64 atau blob
+      if (str.startsWith('data:image/') || str.startsWith('blob:')) return str;
+
+      // Ekstrak ID Google Drive jika ada
+      const fileId = extractGoogleDriveFileId(str);
+      if (fileId && fileId.length >= 15 && !fileId.startsWith('http')) {
+        // Menggunakan direct stream lh3 Google dengan parameter resolusi tinggi dan ekstensi file .jpg
+        return `https://lh3.googleusercontent.com/d/${fileId}=s1600?export=download&ext=.jpg`;
+      }
+
+      // Jika URL eksternal biasa namun belum berakhiran format gambar
+      return str;
+    }
+
+    // Helper Tautan Alternatif Thumbnail Google Drive .JPG (Fallback)
+    function formatDriveThumbnailJpgUrl(rawUrlOrId) {
+      const fileId = extractGoogleDriveFileId(rawUrlOrId);
+      if (fileId && fileId.length >= 15 && !fileId.startsWith('http')) {
+        return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600&ext=.jpg`;
+      }
+      return 'https://placehold.co/800x1100/0f172a/38bdf8?text=Pratinjau+Dokumen.jpg';
+    }
+
+    // Helper Tautan Standar Google Drive Viewer Web
+    function formatGoogleDriveWebUrl(rawUrlOrId) {
+      const fileId = extractGoogleDriveFileId(rawUrlOrId);
+      if (fileId && fileId.length >= 15 && !fileId.startsWith('http')) {
+        return `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+      }
+      return String(rawUrlOrId || '#');
+    }
+
+    // Penanganan Kesalahan Gambar pada Lightbox
+    function handleLightboxImageError(imgEl) {
+      const spinner = document.getElementById('lightboxLoadingSpinner');
+      if (spinner) spinner.classList.add('hidden');
+
+      const currentSrc = imgEl.src;
+      // Jika percobaan pertama lh3 gagal, coba fallback ke Drive thumbnail endpoint
+      if (currentSrc.includes('googleusercontent.com') && imgEl.dataset.fallbackTried !== 'true') {
+        imgEl.dataset.fallbackTried = 'true';
+        const fileId = extractGoogleDriveFileId(imgEl.dataset.rawOrigin || currentSrc);
+        if (fileId) {
+          imgEl.src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600&ext=.jpg`;
+          return;
+        }
+      }
+
+      // Jika kedua stream gambar terhambat izin akses Google Drive, tampilkan banner solusi
+      imgEl.classList.add('hidden');
+      const errorBanner = document.getElementById('lightboxErrorBanner');
+      if (errorBanner) errorBanner.classList.remove('hidden');
+    }
 
     // Simpan Snapshot ke Cache Lokal
     function saveStateToCache() {
@@ -1303,23 +1396,70 @@
       if (!container) return;
 
       container.innerHTML = docs.map(doc => {
+        const jpgDirectUrl = formatDriveToDirectJpgUrl(doc.file_url || doc.file_id);
+        const driveWebUrl = formatGoogleDriveWebUrl(doc.file_url || doc.file_id);
+        const fileNameJpg = (doc.file_name && doc.file_name.toLowerCase().endsWith('.jpg')) 
+          ? doc.file_name 
+          : `${(doc.jenis_dokumen || 'dokumen').toLowerCase().replace(/\s+/g, '_')}_${doc.nisn}.jpg`;
+
         return `
           <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4 flex flex-col justify-between gap-3 hover:border-sky-500/50 transition-all duration-200">
             <div>
-              <div class="h-44 w-full rounded-xl bg-slate-950 overflow-hidden border border-slate-800/80 relative group cursor-pointer" onclick="openLightboxModal('${doc.file_url}', '${doc.jenis_dokumen}', '${doc.nama_siswa} (${doc.nisn})')">
-                <img src="${doc.file_url}" alt="${doc.jenis_dokumen}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.src='https://placehold.co/800x1100/0f172a/38bdf8?text=Dokumen+Digital'" />
-                <div class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
-                  <span class="px-3 py-1.5 rounded-lg bg-sky-500 text-white font-semibold text-xs shadow-lg">Buka Pratinjau</span>
+              <div class="h-44 w-full rounded-xl bg-slate-950 overflow-hidden border border-slate-800/80 relative group cursor-pointer" onclick="openLightboxModal('${jpgDirectUrl}', '${doc.jenis_dokumen}', '${doc.nama_siswa} (${doc.nisn})', '${driveWebUrl}')">
+                <img 
+                  src="${jpgDirectUrl}" 
+                  alt="${doc.jenis_dokumen}" 
+                  class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" 
+                  onerror="this.onerror=null; this.src='${formatDriveThumbnailJpgUrl(doc.file_url || doc.file_id)}';" 
+                />
+                <div class="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                  <span class="px-3 py-1.5 rounded-lg bg-sky-500 text-white font-semibold text-xs shadow-lg flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <span>Buka Pratinjau JPG</span>
+                  </span>
+                </div>
+                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-slate-950/80 border border-slate-700 text-[10px] font-mono text-sky-400">
+                  .JPG
                 </div>
               </div>
               <div class="mt-3">
                 <span class="text-[10px] font-semibold text-sky-400 uppercase tracking-wider">${doc.jenis_dokumen}</span>
-                <p class="text-xs font-bold text-slate-200 truncate mt-0.5">${doc.file_name || doc.jenis_dokumen}</p>
+                <p class="text-xs font-bold text-slate-200 truncate mt-0.5">${fileNameJpg}</p>
               </div>
             </div>
-            <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-              <span>Arsip Drive</span>
-              <a href="${doc.file_url}" target="_blank" class="text-sky-400 hover:underline font-medium">Unduh Asli</a>
+
+            <!-- Tombol Aksi Buka Dokumen -->
+            <div class="pt-3 border-t border-slate-800 space-y-2">
+              <div class="flex items-center gap-2">
+                <button 
+                  type="button" 
+                  onclick="openLightboxModal('${jpgDirectUrl}', '${doc.jenis_dokumen}', '${doc.nama_siswa.replace(/'/g, "\\'")} (${doc.nisn})', '${driveWebUrl}')" 
+                  class="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 active:scale-95 text-white font-semibold text-xs shadow-md shadow-sky-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span>Buka Dokumen</span>
+                </button>
+                <a 
+                  href="${driveWebUrl}" 
+                  target="_blank" 
+                  class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700 flex items-center justify-center shrink-0" 
+                  title="Buka di Google Drive"
+                >
+                  <svg class="w-3.5 h-3.5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-400 px-0.5">
+                <span class="flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Google Drive (.jpg)</span>
+                </span>
+                <a href="${jpgDirectUrl}" target="_blank" class="text-sky-400 hover:underline font-semibold" title="Buka gambar langsung">Tab Baru</a>
+              </div>
             </div>
           </div>
         `;
@@ -1596,7 +1736,22 @@
         const note = v ? (v.note || '') : '';
 
         const docsTags = s.documents.map(d => {
-          return `<span class="inline-block px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 mr-1 mb-1 border border-slate-700">${d.jenis_dokumen}</span>`;
+          const directJpg = formatDriveToDirectJpgUrl(d.file_url || d.file_id);
+          const driveWeb = formatGoogleDriveWebUrl(d.file_url || d.file_id);
+          return `
+            <button 
+              type="button" 
+              onclick="openLightboxModal('${directJpg}', '${d.jenis_dokumen}', '${s.nama_siswa.replace(/'/g, "\\'")} (${s.nisn})', '${driveWeb}')" 
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 hover:text-sky-200 text-[11px] font-medium mr-1 mb-1 border border-sky-500/30 transition-all cursor-pointer shadow-xs"
+              title="Klik untuk membuka dokumen ${d.jenis_dokumen}"
+            >
+              <svg class="w-3 h-3 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>${d.jenis_dokumen}</span>
+            </button>
+          `;
         }).join('');
 
         let statusHtml = '';
@@ -1938,6 +2093,9 @@
       }
 
       tbody.innerHTML = docs.map(d => {
+        const directJpg = formatDriveToDirectJpgUrl(d.file_url || d.file_id);
+        const driveWeb = formatGoogleDriveWebUrl(d.file_url || d.file_id);
+
         return `
           <tr class="hover:bg-slate-800/40 transition-colors">
             <td class="p-3 font-mono text-sky-400 text-[11px]">${d.id}</td>
@@ -1950,10 +2108,15 @@
             </td>
             <td class="p-3 text-slate-200 font-medium">${d.jenis_dokumen}</td>
             <td class="p-3">
-              <a href="${d.file_url}" target="_blank" class="text-sky-400 hover:underline inline-flex items-center gap-1 font-medium text-[11px]">
-                <span>Buka Link Drive</span>
-                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-              </a>
+              <div class="flex items-center gap-2">
+                <a href="${directJpg}" target="_blank" class="px-2 py-1 rounded bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 text-[11px] font-mono font-semibold flex items-center gap-1">
+                  <span>Lihat .JPG</span>
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>
+                <a href="${driveWeb}" target="_blank" class="text-slate-400 hover:text-slate-200 text-[11px]" title="Buka Link Google Drive">
+                  Drive
+                </a>
+              </div>
             </td>
             <td class="p-3 text-right space-x-1.5">
               <button onclick="openEditModal('${d.id}')" class="p-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30" title="Edit Data">
@@ -2441,7 +2604,7 @@
 
             if (nisnRaw && namaRaw) {
               const cleanNISN = String(nisnRaw).trim();
-              const directUrl = fileId.startsWith('http') ? fileId : (fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : 'https://placehold.co/800x1100/0f172a/38bdf8?text=Berkas+Arsip');
+              const directUrl = fileId.startsWith('http') ? fileId : (fileId ? `https://lh3.googleusercontent.com/d/${fileId}=s1600?export=download&ext=.jpg` : 'https://placehold.co/800x1100/0f172a/38bdf8?text=Berkas+Arsip.jpg');
 
               stagedBulkDocuments.push({
                 id: `DOC-${new Date().getFullYear()}-${1000 + i}`,
@@ -2555,35 +2718,49 @@
             console.log("Tersinkron ke Google Spreadsheet:", gasResult.message);
           }
         } catch (netErr) {
-          console.warn("Penyimpanan offline berhasil, kendala koneksi Spreadsheet:", netErr);
+          console.warn("Gagal sinkron impor kolektif ke GAS:", netErr);
         }
       }
 
       showLoading(false);
       closeBulkImportModal();
-
+      syncAdminClassOptions();
+      syncGuruClassOptions();
       updateAdminStatistics();
       renderAdminMasterTable();
-
-      if (currentGuruSession) {
-        syncGuruClassOptions();
-        renderGuruTable();
-      }
-
-      showToast(`Impor kolektif berhasil: ${updatedCount} berkas diperbarui & ${addedCount} berkas baru disimpan permanen!`, 'success');
+      if (currentGuruSession) renderGuruTable();
+      showToast(`Impor selesai: ${updatedCount} berkas diperbarui & ${addedCount} berkas baru tersimpan.`, 'success');
     }
 
-    function openLightboxModal(url, title, sub) {
+    function openLightboxModal(url, title, sub, driveWebUrl) {
       const modal = document.getElementById('modalLightbox');
       const img = document.getElementById('lightboxImage');
       const t = document.getElementById('lightboxTitle');
       const s = document.getElementById('lightboxSub');
-      const d = document.getElementById('lightboxDownloadBtn');
+      const downloadBtn = document.getElementById('lightboxDownloadBtn');
+      const driveDirectBtn = document.getElementById('lightboxDriveDirectBtn');
+      const fallbackLink = document.getElementById('lightboxDriveFallbackLink');
+      const errorBanner = document.getElementById('lightboxErrorBanner');
+      const spinner = document.getElementById('lightboxLoadingSpinner');
+
+      // Reset kondisi modal
+      if (errorBanner) errorBanner.classList.add('hidden');
+      if (img) {
+        img.classList.remove('hidden');
+        img.dataset.fallbackTried = 'false';
+        img.dataset.rawOrigin = url || '';
+      }
+      if (spinner) spinner.classList.remove('hidden');
+
+      const resolvedJpgUrl = formatDriveToDirectJpgUrl(url);
+      const resolvedDriveUrl = driveWebUrl || formatGoogleDriveWebUrl(url);
 
       if (t) t.textContent = title || 'Pratinjau Dokumen';
       if (s) s.textContent = sub || 'SMA Negeri 1 Kutowinangun';
-      if (img) img.src = url;
-      if (d) d.href = url;
+      if (img) img.src = resolvedJpgUrl;
+      if (downloadBtn) downloadBtn.href = resolvedJpgUrl;
+      if (driveDirectBtn) driveDirectBtn.href = resolvedDriveUrl;
+      if (fallbackLink) fallbackLink.href = resolvedDriveUrl;
 
       if (modal) {
         modal.classList.remove('hidden');

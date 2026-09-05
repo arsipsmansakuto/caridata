@@ -66,6 +66,14 @@ function handleGetAllData() {
       const rawFileId = String(row[5] || '').trim();
       const rawFileUrl = String(row[6] || '').trim();
 
+      // Format URL direct image stream resolusi tinggi Google Drive berekstensi .jpg
+      let directJpgUrl = rawFileUrl;
+      if (rawFileId && rawFileId.length >= 15) {
+        directJpgUrl = 'https://lh3.googleusercontent.com/d/' + rawFileId + '=s1600?export=download&ext=.jpg';
+      } else if (!directJpgUrl) {
+        directJpgUrl = 'https://placehold.co/800x1100/0f172a/38bdf8?text=Dokumen+Digital.jpg';
+      }
+
       documents.push({
         id: String(row[0]),
         nisn: rawNisn,
@@ -73,7 +81,7 @@ function handleGetAllData() {
         kelas: String(row[3] || ''),
         jenis_dokumen: String(row[4] || ''),
         file_id: rawFileId,
-        file_url: rawFileUrl || (rawFileId ? ('https://lh3.googleusercontent.com/d/' + rawFileId) : ''),
+        file_url: directJpgUrl,
         file_name: String(row[7] || ''),
         uploaded_at: row[8] ? new Date(row[8]).toISOString() : new Date().toISOString(),
         uploaded_by: String(row[9] || 'admin_tu')
@@ -148,7 +156,12 @@ function handleSearchNISN(searchNISN) {
 
     if (cleanCellNISN === cleanQuery || cellNISN === rawQuery) {
       const fileId = String(row[5] || '').trim();
-      const fileUrl = String(row[6] || '').trim();
+      let fileUrl = String(row[6] || '').trim();
+
+      // Format resolusi tinggi dengan ekstensi langsung .jpg
+      if (fileId && fileId.length >= 15) {
+        fileUrl = 'https://lh3.googleusercontent.com/d/' + fileId + '=s1600?export=download&ext=.jpg';
+      }
 
       matchedDocs.push({
         id: String(row[0]),
@@ -157,7 +170,7 @@ function handleSearchNISN(searchNISN) {
         kelas: String(row[3] || ''),
         jenis_dokumen: String(row[4] || ''),
         file_id: fileId,
-        file_url: fileUrl || (fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : ''),
+        file_url: fileUrl || 'https://placehold.co/800x1100/0f172a/38bdf8?text=Dokumen+Digital.jpg',
         file_name: String(row[7] || ''),
         uploaded_at: row[8] ? new Date(row[8]).toISOString() : '',
         uploaded_by: String(row[9] || 'admin_tu')
@@ -284,7 +297,10 @@ function handleBatchImportDocuments(documents) {
       }
 
       const fileId = String(doc.file_id || '').trim();
-      const fileUrl = doc.file_url || (fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : '');
+      let fileUrl = doc.file_url || '';
+      if (fileId && fileId.length >= 15) {
+        fileUrl = `https://lh3.googleusercontent.com/d/${fileId}=s1600?export=download&ext=.jpg`;
+      }
       const timestamp = doc.uploaded_at || new Date().toISOString();
 
       if (matchedRowIdx !== -1) {
@@ -397,10 +413,13 @@ function handleUploadDocument(payload) {
       const driveFile = targetFolder.createFile(blob);
       driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
       fileId = driveFile.getId();
-      fileUrl = `https://lh3.googleusercontent.com/d/${fileId}`;
+      fileUrl = `https://lh3.googleusercontent.com/d/${fileId}=s1600?export=download&ext=.jpg`;
     } else if (payload.file_url) {
       fileUrl = payload.file_url;
       fileId = payload.file_id || '';
+      if (fileId && fileId.length >= 15) {
+        fileUrl = `https://lh3.googleusercontent.com/d/${fileId}=s1600?export=download&ext=.jpg`;
+      }
     }
 
     const docId = `DOC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
